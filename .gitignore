@@ -9,6 +9,7 @@
 
 # RStudio files
 .Rproj.user/
+*.Rproj
 
 # Data folder
 Data/
