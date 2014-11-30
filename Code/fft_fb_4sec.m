@@ -5,26 +5,24 @@
 
 
 %% Directory listing
-listing = dir('../Data/train/Data*');
+listing = dir('../Data/train/Data_S02*');
 
 % Prepare matrix to store data from all files, wc -l * will give out the
 % total number of lines in every file, there are 13669360 - 80 lines
-allsignals = zeros(13669360 - 80, 59);
+%allsignals = zeros(13669360 - 80, 59);
 
 % home version -- managable on a laptop
-%allsignals = zeros(711010 - 5, 59); 
+allsignals = zeros(711010 - 5, 59); 
 
 
 %% Load data
+disp('Loading data ...')
 to = 0;
 for fid = 1:length(listing)
+    disp(['Processing ', listing(fid).name])
     signals = csvread(['../Data/train/' listing(fid).name], 1);
     fr = to + 1;  % take the next row after the previous data inject
     to = fr + size(signals, 1) - 1;
-    disp(fr)
-    disp(size(signals, 1))
-    disp(to)
-    disp('----------------------')
     allsignals(fr:to, :) = signals;
 end
 
@@ -36,6 +34,7 @@ labels = labels(1:340);
 
 
 %% FFT with FieldTrip
+disp('Performing FFT ...')
 
 % parameters
 winsize = 1.0;
@@ -66,7 +65,7 @@ cfg.method       = 'mtmconvol';
 cfg.taper        = 'hanning';
 cfg.keeptrials   = 'yes';
 cfg.foi          = 2:1:97;
-cfg.t_ftimwin    = ones(length(cfg.foi), 1) .* winsize;
+cfg.t_ftimwin    = ones(length(cfg.foi), 1) .* (winsize - 1/200);
 cfg.toi          = (winsize/2):winstep:(floor(length(preprocessed.time{1}) / preprocessed.fsample) - winsize/2);
 
 % perform the transform
@@ -74,6 +73,7 @@ frequencies = ft_freqanalysis(cfg, preprocessed);
 
 
 %% Glue into instances
+disp('Composing dataset ...')
 ntrials = size(frequencies.powspctrm, 1);
 nchanls = size(frequencies.powspctrm, 2);
 nfreqs  = size(frequencies.powspctrm, 3);
@@ -90,6 +90,7 @@ end
 
 
 %% Store the file
+disp('Storing the dataset ...')
 csvwrite('../Data/FFT Matlab/train_fft_win1_step1.csv', instances);
 
 

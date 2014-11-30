@@ -67,7 +67,7 @@ cfg.method       = 'mtmconvol';
 cfg.taper        = 'hanning';
 cfg.keeptrials   = 'yes';
 cfg.foi          = 2:1:97;
-cfg.t_ftimwin    = ones(length(cfg.foi), 1) .* winsize;
+cfg.t_ftimwin    = ones(length(cfg.foi), 1) .* (winsize - 1/200);
 cfg.toi          = (winsize/2):winstep:(floor(length(preprocessed.time{1}) / preprocessed.fsample) - winsize/2);
 
 % perform the transform
