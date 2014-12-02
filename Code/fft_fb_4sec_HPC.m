@@ -93,8 +93,25 @@ end
 
 %% Store the file
 disp('Storing the dataset ...')
-csvwrite('../Data/FFT Matlab/train_fft_win1_step1.csv', instances);
+csvwrite('../Data/FFT Matlab/train_fft_ps4sec_win1_step1.csv', instances);
 
+
+%% PCA
+disp('Performing PCA ...')
+features = instances(:, 1:(nchanls * nfreqs));
+[coeff, score, variance] = pca(features);
+
+cv = cumsum(variance / sum(variance));
+keep99 = min(find(cv >= 0.99));
+keep999 = min(find(cv >= 0.999));
+
+pca99instances = [score(:, 1:keep99) instances(:, nchanls * nfreqs + 1)];
+pca999instances = [score(:, 1:keep999) instances(:, nchanls * nfreqs + 1)];
+
+csvwrite('../Data/FFT Matlab/train_fft_ps4sec_win1_step1_pca99.csv', pca99instances);
+csvwrite('../Data/FFT Matlab/train_fft_ps4sec_win1_step1_pca999.csv', pca999instances);
+
+%%  Done
 disp('All done.')
 
 
