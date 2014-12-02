@@ -35,3 +35,11 @@ true.s <- sapply(true.w, function(x) as.numeric(mean(x)>=0.5))
 
 roc(true.s,predicted.s)
 
+
+#read test data
+dataset.orig.test <- read.table('../Data/FFT Matlab/test_fft_ps4sec_win1_step1_pca13.csv', sep=',')
+dataset.orig.test[, ncol(dataset.orig.test)] <- as.factor(dataset.orig.test[, ncol(dataset.orig.test)])
+colnames(dataset.orig.test) <- paste("A_",1:length(colnames(dataset.orig.test)),sep="")
+predictions_on_test <- predict(classifier, dataset.orig.test)
+
+#dataset.orig.test$class <- as.factor(ifelse(dataset.orig.test$class==1,"positive","negative"))
