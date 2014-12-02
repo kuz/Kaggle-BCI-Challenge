@@ -9,38 +9,35 @@ library('caret')
 # load data
 dataset.orig <- read.table('../Data/FFT Matlab/train_fft_ps4sec_win1_step1_pca99.csv', sep=',')
 dataset.orig[, ncol(dataset.orig)] <- as.factor(dataset.orig[, ncol(dataset.orig)])
-#colnames(dataset.orig) <- c(paste("A_",1:(length(colnames(dataset.orig)) - 1),sep=""), 'class')
+colnames(dataset.orig) <- c(paste("A_",1:(length(colnames(dataset.orig)) - 1),sep=""), 'class')
+dataset.orig$class <- as.factor(ifelse(dataset.orig$class==1,"positive","negative"))
 
 # split into train and validation set
-train.idx <- sample(seq(along = dataset.orig[ , ncol(dataset.orig)]), nrow(dataset.orig) * 2/3)
+train.idx <- sample(nrow(dataset.orig), nrow(dataset.orig) * 2/3)
 train <- dataset.orig[ train.idx, ]
 valid <- dataset.orig[-train.idx, ]
 
 # train a model
-trcontrol <- trainControl(method='cv', number=10, classProbs=T, summaryFunction=twoClassSummary)
+trcontrol <- trainControl(method='cv', number = 10, classProbs=T, summaryFunction=twoClassSummary)
 #preproc   <- c('center', 'scale')
 classifier <- train(train[,-ncol(train)], train[,ncol(train)], 'rf', do.trace = T, trControl=trcontrol)
 
-classifier <- randomForest(data=train, class ~ ., do.trace=TRUE)
+# using canonical random forest function
+#classifier <- randomForest(data=train, class ~ ., do.trace=TRUE)
+
+# calculate probabilities
 predicted.prob <- predict(classifier, newdata = valid, type="prob")[,1]
-roc(valid$class, predicted.prob)
 
 # see results
-classifier
-confusionMatrix(classifier)
-predicted <- as.factor(predict(classifier, valid[, -ncol(valid)]))
-predicted.prob <- predict(classifier, newdata = valid[, -ncol(valid)], type="prob")
-true  <- as.factor(valid[, ncol(valid)])
-confusionMatrix(predicted, true)
-roc(response = ,predictor = res$value)
+roc(valid$class, predicted.prob)
 
 # Squeeze predictions on windows back to preditions on instances
-predicted   <- predict(classifier, train[, -ncol(train)])
+predicted   <- predict(classifier, valid[, -ncol(valid)])
 predicted.w <- as.numeric(predicted) - 1
 predicted.w <- split(predicted.w, ceiling(seq_along(predicted) / 4))
 predicted.s <- rep(0, 1, length(predicted.w))
 
-true   <- train[, ncol(train)]
+true   <- valid[, ncol(valid)]
 true.w <- as.numeric(true) - 1
 true.w <- split(true.w, ceiling(seq_along(true) / 4))
 true.s <- rep(0, 1, length(true.w))
@@ -50,6 +47,7 @@ for (i in c(1:length(predicted.s))) {
   true.s[i]      <- as.numeric(mean(true.w[[i]]) >= 0.5)
 }
 
+table(true = true.s, pred = predicted.s)
 # in-sample binary classification error
 e.in <- sum(predicted.s != true.s) / nrow(train)
 
