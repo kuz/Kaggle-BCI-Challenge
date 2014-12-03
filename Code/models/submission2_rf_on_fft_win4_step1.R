@@ -16,7 +16,7 @@ dataset.orig$class <- as.factor(ifelse(dataset.orig$class==1,"positive","negativ
 train.idx <- sample(nrow(dataset.orig), nrow(dataset.orig)*2/3)
 train <- dataset.orig[ train.idx, ]
 valid <- dataset.orig[-train.idx, ]
-
+train <- dataset.orig
 # train a model
 trcontrol <- trainControl(method='cv', number=2, classProbs=T, summaryFunction=twoClassSummary)
 classifier <- train(train[,-ncol(train)], train[,ncol(train)], 'rf', do.trace = T, trControl=trcontrol)
@@ -38,8 +38,17 @@ roc(true.s,predicted.s)
 
 #read test data
 dataset.orig.test <- read.table('../Data/FFT Matlab/test_fft_ps4sec_win1_step1_pca13.csv', sep=',')
-dataset.orig.test[, ncol(dataset.orig.test)] <- as.factor(dataset.orig.test[, ncol(dataset.orig.test)])
+#dataset.orig.test[, ncol(dataset.orig.test)] <- as.factor(dataset.orig.test[, ncol(dataset.orig.test)])
 colnames(dataset.orig.test) <- paste("A_",1:length(colnames(dataset.orig.test)),sep="")
-predictions_on_test <- predict(classifier, dataset.orig.test)
-
+#dataset.orig.test$class <- rep(c(1,0),nrow(dataset.orig.test)/2)
+predictions_on_test <- predict(classifier, dataset.orig.test, type="prob")[,1]
+predicted.w <- split(predictions_on_test, ceiling(seq_along(predictions_on_test) / 4))
+predicted.s <- sapply(predicted.w, FUN=mean)
+predicted.plot <- as.data.frame(predicted.s)
+ggplot(predicted.plot, aes(x=predicted.s))+geom_histogram()+theme_bw()
+predictions_on_test_bin <- ifelse(predicted.s>=0.4,0,1)
 #dataset.orig.test$class <- as.factor(ifelse(dataset.orig.test$class==1,"positive","negative"))
+
+result <- data.frame(read.table('../Results/SampleSubmission.csv', sep = ',', header = T))
+result$Prediction = predictions_on_test_bin
+write.table(result, '../Results/submission2_rf_on_fft_win4_step1.csv', sep = ',', quote = F, row.names = F, col.names = T)

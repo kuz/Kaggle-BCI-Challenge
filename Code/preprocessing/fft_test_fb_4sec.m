@@ -3,16 +3,19 @@
 % [feedback + 4sec]
 %
 
+%% Add FieldTrip path
+addpath /gpfs/hpchome/etais/hpc_kuz/Software/fieldtrip
+ft_defaults
 
 %% Directory listing
-listing = dir('../Data/train/Data_S02*');
+listing = dir('../../Data/test/Data*');
 
 % Prepare matrix to store data from all files, wc -l * will give out the
 % total number of lines in every file, there are 13669360 - 80 lines
-%allsignals = zeros(13669360 - 80, 59);
+allsignals = zeros(7913300 - 52, 59);
 
 % home version -- managable on a laptop
-allsignals = zeros(711010 - 5, 59); 
+%allsignals = zeros(711010 - 5, 59); 
 
 
 %% Load data
@@ -20,7 +23,7 @@ disp('Loading data ...')
 to = 0;
 for fid = 1:length(listing)
     disp(['Processing ', listing(fid).name])
-    signals = csvread(['../Data/train/' listing(fid).name], 1);
+    signals = csvread(['../../Data/test/' listing(fid).name], 1);
     fr = to + 1;  % take the next row after the previous data inject
     to = fr + size(signals, 1) - 1;
     allsignals(fr:to, :) = signals;
@@ -28,10 +31,6 @@ end
 
 fbtimes = find(allsignals(:, 59) == 1);
 signals = allsignals(:, 2:57)';
-
-labels = csvread('../Data/TrainLabels.csv', 1, 1);
-labels = labels(1:340);
-
 
 %% FFT with FieldTrip
 disp('Performing FFT ...')
@@ -79,19 +78,36 @@ nchanls = size(frequencies.powspctrm, 2);
 nfreqs  = size(frequencies.powspctrm, 3);
 nchunks = size(frequencies.powspctrm, 4);
 
-instances = zeros(ntrials * nchunks, nchanls * nfreqs + 1);
+instances = zeros(ntrials * nchunks, nchanls * nfreqs);
 for t = 1:ntrials
     for c = 1:nchunks
         x = squeeze(frequencies.powspctrm(t, :, :, c));
         y = reshape(x', 1, nchanls * nfreqs);
-        instances(s, :) = [y labels(t)];
+        instances((t - 1) * nchunks + c, :) = y;
     end
 end
 
 
 %% Store the file
 disp('Storing the dataset ...')
-csvwrite('../Data/FFT Matlab/train_fft_win1_step1.csv', instances);
+csvwrite('../../Data/FFT Matlab/test_fft_ps4sec_win1_step1.csv', instances);
+
+%% PCA
+disp('Performing PCA ...')
+[coeff, score, variance] = pca(instances);
+
+cv = cumsum(variance / sum(variance));
+keep99 = min(find(cv >= 0.99));
+keep999 = min(find(cv >= 0.999));
+
+pca99instances = [score(:, 1:keep99) instances(:, nchanls * nfreqs + 1)];
+pca999instances = [score(:, 1:keep999) instances(:, nchanls * nfreqs + 1)];
+
+csvwrite('../../Data/FFT Matlab/test_fft_ps4sec_win1_step1_pca99.csv', pca99instances);
+csvwrite('../../Data/FFT Matlab/test_fft_ps4sec_win1_step1_pca999.csv', pca999instances);
+
+%% Done
+disp('All done.')
 
 
 
