@@ -3,70 +3,62 @@
 #
 
 library('caret')
+library('data.table')
 
 # load data
-train.orig <- read.table('../../Data/FFT Matlab/train_fft_fb4sec_win4_step4_pca99.csv', sep=',')
-test.orig <- read.table('../../Data/FFT Matlab/test_fft_fb4sec_win4_step4_pca99.csv', sep=',')
+train.path <- '../../Data/train'
+test.path <- '../../Data/test'
+train.files <- dir(train.path, pattern='Data.*\\.csv', full.names=T)
+test.files <- dir(test.path, pattern='Data.*\\.csv', full.names=T)
+train.tables <- lapply(train.files, fread)
+test.tables <- lapply(test.files, fread)
+train.orig <- do.call(rbind, train.tables)
+test.orig <- do.call(rbind, test.tables)
 
+# extract 2 seconds after the feedback
+extract <- function(dataset) {
+  fb.idx <- which(dataset$FeedBackEvent == 1)
+  result <- data.frame()
+  for (fbi in fb.idx) {
+    result <- rbind.data.frame(result, dataset[fbi:(fbi + 399), Cz])
+  }
+  return(result)
+}
+train.orig <- extract(train.orig)
+test.orig <- extract(test.orig)
 
-dataset.orig <- read.table('../../Data/FFT Matlab/train_fft_ps4sec_win1_step1_pca99.csv', sep=',')
-dataset.orig[, ncol(dataset.orig)] <- as.factor(dataset.orig[, ncol(dataset.orig)])
-colnames(dataset.orig) <- c(paste("A_",1:(length(colnames(dataset.orig)) - 1),sep=""), 'class')
-dataset.orig$class <- as.factor(ifelse(dataset.orig$class==1,"positive","negative"))
+# add labels
+labels <- fread('../../Data/TrainLabels.csv')
+train.orig <- cbind.data.frame(train.orig, labels$Prediction[1:nrow(train.orig)])
+
+# add decent names
+train.orig[, ncol(train.orig)] <- as.factor(train.orig[, ncol(train.orig)])
+colnames(train.orig) <- c(paste("A_", 1:(length(colnames(train.orig)) - 1), sep=""), 'class')
+train.orig$class <- as.factor(ifelse(train.orig$class == 1, "positive", "negative"))
+
+colnames(test.orig) <- c(paste("A_", 1:(length(colnames(test.orig))), sep=""))
 
 # split into train and validation set
-train.idx <- sample(nrow(dataset.orig), nrow(dataset.orig) * 2/3)
-train <- dataset.orig[ train.idx, ]
-valid <- dataset.orig[-train.idx, ]
+train.idx <- sample(nrow(train.orig), nrow(train.orig) * 2/3)
+train <- train.orig[ train.idx, ]
+valid <- train.orig[-train.idx, ]
+test  <- test.orig
 
 # train a model
 trcontrol <- trainControl(method='cv', number = 10, classProbs=T, summaryFunction=twoClassSummary)
-#preproc   <- c('center', 'scale')
-classifier <- train(train[,-ncol(train)], train[,ncol(train)], 'rf', do.trace = T, trControl=trcontrol)
+preproc   <- c('center', 'scale')
+classifier <- train(train[,-ncol(train)], as.factor(train[,ncol(train)]), 'gbm', 
+                    trControl=trcontrol, preProc=preproc)
 
-# using canonical random forest function
-#classifier <- randomForest(data=train, class ~ ., do.trace=TRUE)
-
-# calculate probabilities
-predicted.prob <- predict(classifier, newdata = valid, type="prob")[,1]
-
-# see results
+# validation results
+predicted.prob <- predict(classifier, newdata=valid[, -ncol(valid)], type="prob")$positive
 roc(valid$class, predicted.prob)
 
-# Squeeze predictions on windows back to preditions on instances
-predicted   <- predict(classifier, valid[, -ncol(valid)])
-predicted.w <- as.numeric(predicted) - 1
-predicted.w <- split(predicted.w, ceiling(seq_along(predicted) / 4))
-predicted.s <- rep(0, 1, length(predicted.w))
+# make predictions on test data
+predicted.prob <- predict(classifier, newdata=test, type="prob")$positive
 
-true   <- valid[, ncol(valid)]
-true.w <- as.numeric(true) - 1
-true.w <- split(true.w, ceiling(seq_along(true) / 4))
-true.s <- rep(0, 1, length(true.w))
-
-for (i in c(1:length(predicted.s))) {
-  predicted.s[i] <- as.numeric(mean(predicted.w[[i]]) >= 0.5)
-  true.s[i]      <- as.numeric(mean(true.w[[i]]) >= 0.5)
-}
-
-table(true = true.s, pred = predicted.s)
-
-# Load test data
-test <- read.table('../Data/FFT Matlab/test_fft_ps4sec_win1_step1_pca13.csv', sep=',')
-colnames(test) <- paste("A_",1:(length(colnames(test))),sep="")
-head(test)
-
-predicted   <- predict(classifier, newdata = test)
-predicted.w <- as.numeric(predicted) - 1
-predicted.w <- split(predicted.w, ceiling(seq_along(predicted) / 4))
-predicted.s <- rep(0, 1, length(predicted.w))
-
-for (i in c(1:length(predicted.s))) {
-  predicted.s[i] <- as.numeric(mean(predicted.w[[i]]) >= 0.9)
-}
-table(predicted.s)
-
-result <- data.frame(read.table('../Results/SampleSubmission.csv', sep = ',', header = T))
-result$Prediction = predicted.s
-write.table(result, '../Results/submission01_fft.csv.csv', sep = ',', quote = F, row.names = F, col.names = T)
+# store the results
+result <- data.frame(read.table('../../Results/SampleSubmission.csv', sep=',', header=T))
+result$Prediction = predicted.prob
+write.table(result, '../../Results/subKUZ_sandbox.csv', sep=',', quote=F, row.names=F, col.names=T)
 
