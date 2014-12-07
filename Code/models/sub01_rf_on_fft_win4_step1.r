@@ -18,7 +18,7 @@ train <- dataset.orig[ train.idx, ]
 valid <- dataset.orig[-train.idx, ]
 
 # train a model
-trcontrol <- trainControl(method='cv', number = 2, classProbs=T, summaryFunction=twoClassSummary)
+trcontrol <- trainControl(method='cv', number = 10, classProbs=T, summaryFunction=twoClassSummary)
 #preproc   <- c('center', 'scale')
 classifier <- train(train[,-ncol(train)], train[,ncol(train)], 'rf', do.trace = T, trControl=trcontrol)
 
@@ -60,7 +60,7 @@ predicted.w <- split(predicted.w, ceiling(seq_along(predicted) / 4))
 predicted.s <- rep(0, 1, length(predicted.w))
 
 for (i in c(1:length(predicted.s))) {
-  predicted.s[i] <- as.numeric(mean(predicted.w[[i]]) >= 0.5)
+  predicted.s[i] <- as.numeric(mean(predicted.w[[i]]) >= 0.9)
 }
 table(predicted.s)
 
