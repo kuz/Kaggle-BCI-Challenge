@@ -15,7 +15,7 @@ listing = dir('../../Data/test/Data*');
 allsignals = zeros(7913300 - 52, 59);
 
 % home version -- managable on a laptop
-%allsignals = zeros(711010 - 5, 59); 
+%allsignals = zeros(686010 - 5, 59); 
 
 
 %% Load data
@@ -87,7 +87,7 @@ end
 
 %% Store the file
 disp('Storing the dataset ...')
-csvwrite('../../Data/FFT Matlab/test_fft_win4_step4.csv', instances);
+csvwrite('../../Data/FFT Matlab/test_fft_fb4secwin4_step4.csv', instances);
 
 
 %% PCA
@@ -99,8 +99,8 @@ cv = cumsum(variance / sum(variance));
 keep99 = 20;  % min(find(cv >= 0.99));
 keep999 = 39;  % min(find(cv >= 0.999));
 
-pca99instances = [score(:, 1:keep99) instances(:, nchanls * nfreqs)];
-pca999instances = [score(:, 1:keep999) instances(:, nchanls * nfreqs)];
+pca99instances = [score(:, 1:keep99)];
+pca999instances = [score(:, 1:keep999)];
 
 csvwrite('../../Data/FFT Matlab/test_fft_fb4sec_win4_step4_pca99.csv', pca99instances);
 csvwrite('../../Data/FFT Matlab/test_fft_fb4sec_win4_step4_pca999.csv', pca999instances);
