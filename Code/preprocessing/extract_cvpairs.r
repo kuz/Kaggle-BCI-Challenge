@@ -23,10 +23,10 @@ test.orig <- do.call(rbind, test.tables)
 
 # extract 2 seconds after the feedback
 extract <- function(dataset) {
-  fb.idx <- seq(5,7900,by=100)
+  fb.idx <- which(dataset$FeedBackEvent == 1)
   result <- data.frame()
   for (fbi in fb.idx) {
-    result <- rbind.data.frame(result, c(dataset[fbi:(fbi + 50), Cz], dataset$Subject[fbi]))
+    result <- rbind.data.frame(result, c(dataset[fbi:(fbi + 259), Cz], dataset$Subject[fbi]))
   }
   colnames(result)[ncol(result)] <- 'Subject'
   return(result)
