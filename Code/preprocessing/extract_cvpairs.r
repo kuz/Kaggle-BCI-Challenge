@@ -6,28 +6,32 @@ library('caret')
 library('data.table')
 
 # load data
-train.path <- '../../Data/train'
+train.path <- '../../Data/raw/train'
 train.files <- dir(train.path, pattern='Data.*\\.csv', full.names=T)
 train.tables <- lapply(train.files, fread)
 train.nrows <- sapply(train.tables, nrow)
-train.subjs <- as.numeric(substr(train.files, 29, 30))
+train.subjs <- as.numeric(substr(train.files, 28, 29))
 for (i in 1:length(train.tables)) {
   train.tables[[i]] = cbind.data.frame(train.tables[[i]], 'Subject'=rep(train.subjs[i], train.nrows[i]))
 }
 train.orig <- do.call(rbind, train.tables)
 
-test.path <- '../../Data/test'
+test.path <- '../../Data/raw/test'
 test.files <- dir(test.path, pattern='Data.*\\.csv', full.names=T)
 test.tables <- lapply(test.files, fread)
 test.orig <- do.call(rbind, test.tables)
 
 # extract 2 seconds after the feedback
 extract <- function(dataset) {
+  counter <- 0
   fb.idx <- which(dataset$FeedBackEvent == 1)
   result <- data.frame()
   for (fbi in fb.idx) {
+    counter <- counter + 1
     result <- rbind.data.frame(result, c(dataset[fbi:(fbi + 259), Cz], dataset$Subject[fbi]))
+    cat(counter, '/', length(fb.idx), '\r')
   }
+  cat('\n')
   colnames(result)[ncol(result)] <- 'Subject'
   return(result)
 }
@@ -73,7 +77,7 @@ cvpairs[[4]] <- extractpair(c(13:16))
 
 # store the resulting dataset
 dataset = list('cvpairs'=cvpairs, 'test'=test.orig)
-folder = 'Cz2sec'
+folder = 'cz2sec'
 system(paste('mkdir ../../Data/', folder, sep=''))
 saveRDS(dataset, paste('../../Data/', folder, '/dataset.rds', sep=''))
 
