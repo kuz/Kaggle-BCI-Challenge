@@ -23,7 +23,7 @@ buildgrid <- function(parameters) {
                                dimnames=list(c(), c(names(parameters), 'score'))))
   
   # counters
-  plength <- nvalues / 2
+  plength <- ceiling(nvalues / 2)
   ptimes  <- 1
   
   # loop over parameters
