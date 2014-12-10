@@ -97,11 +97,9 @@ colnames(train.orig) <- c(paste("A_", 1:(length(colnames(train.orig)) - 5), sep=
                          'FeedbackNo', 'FeedbackTime', 'Session', 'Subject', 'class')
 train.orig$class <- as.factor(ifelse(train.orig$class == 1, "positive", "negative"))
 
-# prepare test set column names and factors
-test.orig[, ncol(test.orig)] <- as.factor(test.orig[, ncol(test.orig)])
-colnames(test.orig) <- c(paste("A_", 1:(length(colnames(test.orig)) - 5), sep=""),
-                         'FeedbackNo', 'FeedbackTime', 'Session', 'Subject', 'class')
-test.orig$class <- as.factor(ifelse(test.orig$class == 1, "positive", "negative"))
+# prepare test set column names
+colnames(test.orig) <- c(paste("A_", 1:(length(colnames(test.orig)) - 4), sep=""),
+                         'FeedbackNo', 'FeedbackTime', 'Session', 'Subject')
 
 # store the resulting dataset
 dataset = list('cvpairs'=cvpairs, 'train'=train.orig, 'test'=test.orig)
