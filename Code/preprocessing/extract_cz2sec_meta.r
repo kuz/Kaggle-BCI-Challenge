@@ -65,11 +65,7 @@ extractpair <- function(vidx) {
   train.idx <- subjects[-vidx]
   valid <- subset(train.orig, Subject %in% valid.idx)
   train <- subset(train.orig, Subject %in% train.idx)
-  
-  # remove subject information
-  valid$Subject <- NULL
-  train$Subject <- NULL
-  
+
   # modify factors and names
   valid[, ncol(valid)] <- as.factor(valid[, ncol(valid)])
   train[, ncol(train)] <- as.factor(train[, ncol(train)])
