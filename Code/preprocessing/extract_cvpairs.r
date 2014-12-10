@@ -1,5 +1,5 @@
 #
-#  Sandbox
+#  Extract cross-validation pairs (training, validation) such that division is base on subjects
 #
 
 library('caret')
@@ -43,7 +43,8 @@ labels <- fread('../../Data/TrainLabels.csv')
 train.orig <- cbind.data.frame(train.orig, labels$Prediction[1:nrow(train.orig)])
 
 # split into 4 pairs (training, validation)
-
+#
+# @param vidx: vector of test subject's which will go into the validation set c(1,2,3,4)
 extractpair <- function(vidx) {
   
   # extract validation and training data
