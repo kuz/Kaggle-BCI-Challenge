@@ -2,7 +2,8 @@
 #  Extract cross-validation pairs (training, validation) such that division is base on subjects
 #
 
-library('caret')
+# load libraries
+.libPaths('/home/kuzovkin/R/x86_64-unknown-linux-gnu-library/3.0')
 library('data.table')
 
 # load data
@@ -35,9 +36,22 @@ extract <- function(dataset) {
   counter <- 0
   fb.idx <- which(dataset$FeedBackEvent == 1)
   result <- data.frame()
+  
+  # counters
+  prev_sess <- -1
+
+  # loop over feedback events
   for (fbi in fb.idx) {
     counter <- counter + 1
-    result <- rbind.data.frame(result, c(dataset[fbi:(fbi + 259), Cz], counter, fbi,
+    
+    # update counters
+    if (prev_sess != dataset$Session[fbi]) {
+      sfbcounter <- 0
+      prev_sess <- dataset$Session[fbi]
+    }
+    sfbcounter <- sfbcounter + 1
+      
+    result <- rbind.data.frame(result, c(dataset[fbi:(fbi + 259), Cz], sfbcounter, dataset[fbi, Time] * 200,
                                          dataset$Session[fbi], dataset$Subject[fbi]))
     cat(counter, '/', length(fb.idx), '\r')
   }
