@@ -22,12 +22,18 @@ buildgrid <- function(parameters) {
   results <- data.frame(matrix(vector(), nvalues, length(names(parameters)) + 1,
                                dimnames=list(c(), c(names(parameters), 'score'))))
   
-  # counters
-  plength <- ceiling(nvalues / 2)
-  ptimes  <- 1
-  
   # loop over parameters
-  for (pname in names(parameters)) {
+  for (pidx in 1:length(parameters)) {
+    pname = names(parameters)[pidx]
+    
+    # update counters
+    if (pidx == 1) {
+      plength <- nvalues / length(parameters[[pname]])
+      ptimes <- 1
+    } else {
+      plength <- plength / length(parameters[[pname]])
+      ptimes <- ptimes * length(parameters[[pidx - 1]])
+    }
     
     # initialize resulting column with values for the current parameter
     column <- c()
@@ -43,12 +49,9 @@ buildgrid <- function(parameters) {
       }
     }
     
-    # update counter for the next parameter
-    plength <- plength / 2
-    ptimes <- ptimes * 2
-    
     # add column to the resulting table
     results[[pname]] <- column
+    
   }
   
   return(results)

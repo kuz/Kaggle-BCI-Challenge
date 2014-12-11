@@ -3,13 +3,54 @@ library(zoo)
 library(caret)
 library(data.table)
 library(randomForest)
-library(reshape)
+library(reshape2)
+library(xtable)
+library(ggplot2)
+
 
 setwd("/Users/annaleontjeva/Desktop/My_files/Kaggle-BCI-Challenge/Data")
 #---Data---#
 Data_S02_Sess01 <- fread("train/Data_S02_Sess01.csv")
 train <- as.data.frame(Data_S02_Sess01)
 train$Prediction <- ifelse(train$FeedBackEvent==1,TrainLabels$Prediction,0)
+
+#cor_table <- print(xtable(cor(train)),'html',"correlation_between_channels.html")
+
+cor_plot <- qplot(x=X1, y=X2, data=melt(cor(train[,-c(1,59,60)], use="p")), fill=value, geom="tile") +
+  scale_fill_gradient2(limits=c(-1, 1))
+
+#1. find correlations for ech session and each subject separately, find overlapping channels
+#2. find correlations within a subject
+
+highly_correlated <- function(x, correlation_threshold){
+  data <- fread(x)
+  data <- data[,-c(1,59),with=FALSE]
+  cor_idx <- findCorrelation(cor(data), cutoff = correlation_threshold)
+  correlated_channels <- names(data)[cor_idx]
+  return(correlated_channels)
+}
+
+filenames <- list.files("train", pattern="Data.*.csv", full.names=TRUE)
+subjects <- unique(substr(filenames, start = 12, stop = 14))
+cat("Results of correlations within subject",
+    file="correlated_channels_per_subject.txt",sep="\n")
+
+  ldf <- lapply(subject_sessions, highly_correlated, correlation_threshold=0.99)
+  intersection_of_corr_channels_sessions <- Reduce(intersect, ldf) 
+  cat(paste("subject is", subject),file="correlated_channels_per_subject.txt",append=TRUE, sep="\n")
+  cat(intersection_of_corr_channels_sessions,file="correlated_channels_per_subject.txt",append=TRUE, sep="\n")
+}
+
+pdf("cor_plots.pdf")
+for(subject in subjects){
+  subject_sessions <- filenames[grep(paste(".Data_",subject,".",sep=''), filenames)]
+  dt <- do.call("rbind.data.frame",lapply(subject_sessions, fread))
+  cor_plot <- qplot(x=X1, y=X2, data=melt(cor(dt[,-c(1,59),with=F], use="p")), fill=value, geom="tile") +
+  scale_fill_gradient2(limits=c(-1, 1))
+  print(cor_plot)
+}
+dev.off()
+
 train_sub <- train[16000:25000,]
 train_melted <- melt(train_sub, id.vars=c("Time","FeedBackEvent","Prediction"))
 
