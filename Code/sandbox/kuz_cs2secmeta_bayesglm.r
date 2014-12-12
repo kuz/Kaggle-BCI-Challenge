@@ -12,7 +12,7 @@ dataset <- readRDS(paste('../../Data/', datafolder, '/dataset.rds', sep=''))
 
 # 2) ENLIST PARAMETERS HERE
 parameters <- list()
-parameters[['none']] <- c(1)
+parameters[['n.iter']] <- c(10, 30, 50, 100, 200)
 
 # initalize parameter search grid
 results <- buildgrid(parameters)
@@ -35,7 +35,7 @@ for (r in 1:nrow(results)) {
     
     # 3) PRODUCE AN OBJECT classifier HERE
     trcontrol <- trainControl(method='none')
-    classifier <- train(class ~., data = cvpair$train, 'bayesglm', trControl=trcontrol)
+    classifier <- train(class ~., data = cvpair$train, 'bayesglm', trControl=trcontrol, n.iter=p$n.iter)
     
     # made a prediciton on a validation set
     predicted.prob <- predict(classifier, newdata=cvpair$valid, type='prob')$positive
@@ -65,21 +65,14 @@ sink()
 best.idx <- which.max(results$score)
 p <- results[best.idx, ]
 
-# 5) PRODUCE AN OBJECT classifier HERE
+# 5) PRODUCE AN OBJECT classifier HERE (USE THE FULL TRAINING SET)
 trcontrol <- trainControl(method='none')
-classifier <- train(class ~., data = dataset$train, 'bayesglm', trControl=trcontrol)
+classifier <- train(class ~., data = cvpair$train, 'bayesglm', trControl=trcontrol, n.iter=p$n.iter)
 
 # predict on test dataset and store the file
 predicted   <- predict(classifier, newdata=dataset$test, type="prob")$positive
 result <- data.frame(read.table('../../Results/SampleSubmission.csv', sep = ',', header = T))
 result$Prediction = predicted
 write.table(result, paste('../../Results/subX_', datafolder, '_', mlmethod, '.csv', sep=''), sep = ',', quote = F, row.names = F, col.names = T)
-
-
-
-
-
-
-
 
 
