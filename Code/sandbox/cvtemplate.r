@@ -1,20 +1,34 @@
 #
-# Template for hold-out-subjects cross-validation. You need to change 5 things here.
+# Template for hold-out-subjects cross-validation. You need to change 3 things here.
 #
 
-library('gbm')
 library('pROC')
+library('caret')
 source('../functions.r')
 
 # 1) SPECIFY THE DATA FOLDER (WITH THE dataset.rds FILE PRODUCED BY ONE OF Code/preprocessing/extract_*.r SCRIPTS)
 datafolder <- 'cz2secmeta'
 dataset <- readRDS(paste('../../Data/', datafolder, '/dataset.rds', sep=''))
 
-# 2) ENLIST PARAMETERS HERE
+# 2) SPECIFY THE METHOD YOU USE (NEEDED JUST FOR RECORD)
+mlmethod <- 'gbm'
+
+# 3) ENLIST PARAMETERS HERE
 parameters <- list()
 parameters[['n.trees']] <- c(10, 20)
 parameters[['shrinkage']] <- c(0.01, 0.05)
 parameters[['interaction.depth']] <- c(1, 2)
+
+# 4) THIS FUNCITON SHOULD RETURN classifier OBJECT
+# @param p: current set of parameters
+buildmodel <- function(p, trainingset) {
+  gbmGrid <-  expand.grid(interaction.depth=p$interaction.depth, n.trees=p$n.trees, shrinkage=p$shrinkage)
+  trcontrol <- trainControl(method='none', classProbs=T)
+  classifier <- train(class ~., data=trainingset, 'gbm', trControl=trcontrol, tuneGrid = gbmGrid)
+  return(classifier)
+}
+
+
 
 # initalize parameter search grid
 results <- buildgrid(parameters)
@@ -22,12 +36,13 @@ results <- buildgrid(parameters)
 # loop over all combinations of parameters
 for (r in 1:nrow(results)) {
   
-  # display progress
-  cat('Set of parameters', r, 'out of', nrow(results), '\n')
-  cat('------------------------------\n')
-  
   # read in current parameter set
   p <- results[r, ]
+  
+  # display progress
+  cat('Set of parameters', r, 'out of', nrow(results), '\n')
+  print(p)
+  cat('------------------------------\n')
   
   # here we store scores for current parameter set
   scores <- c()
@@ -35,10 +50,8 @@ for (r in 1:nrow(results)) {
   # loop over cross-validation (training, validation) pairs
   for (cvpair in dataset$cvpairs) {
     
-    # 3) PRODUCE AN OBJECT classifier HERE
-    gbmGrid <-  expand.grid(interaction.depth=p$interaction.depth, n.trees=p$n.trees, shrinkage=p$shrinkage)
-    trcontrol <- trainControl(method='none')
-    classifier <- train(class ~., data = cvpair$train, 'gbm', trControl=trcontrol, tuneGrid = gbmGrid)
+    # train a model
+    classifier <- buildmodel(p, cvpair$train)
     
     # made a prediciton on a validation set
     predicted.prob <- predict(classifier, newdata=cvpair$valid, type='prob')$positive
@@ -51,9 +64,6 @@ for (r in 1:nrow(results)) {
   results[r, 'score'] <- mean(scores)
   
 }
-
-# 4) SPECIFY THE METHOD YOU USED FOR THE HISTORY
-mlmethod <- 'gbm'
 
 # store the results of this run
 resultlog <- cbind.data.frame('datafolder'=rep(datafolder, nrow(results)),
@@ -68,10 +78,8 @@ sink()
 best.idx <- which.max(results$score)
 p <- results[best.idx, ]
 
-# 5) PRODUCE AN OBJECT classifier HERE (USE THE FULL TRAINING SET)
-gbmGrid <-  expand.grid(interaction.depth=p$interaction.depth, n.trees=p$n.trees, shrinkage=p$shrinkage)
-trcontrol <- trainControl(method='none')
-classifier <- train(class ~., data = dataset$train, 'gbm', trControl=trcontrol, tuneGrid = gbmGrid)
+# train a model on all training data with the best parameters
+classifier <- buildmodel(p, dataset$train)
 
 # predict on test dataset and store the file
 predicted   <- predict(classifier, newdata=dataset$test, type="prob")$positive
