@@ -13,8 +13,8 @@ dataset <- readRDS(paste('../../Data/', datafolder, '/dataset.rds', sep=''))
 # 2) ENLIST PARAMETERS HERE
 parameters <- list()
 parameters[['n.trees']] <- c(500, 800, 1200)
-parameters[['shrinkage']] <- c(0.05)
-parameters[['interaction.depth']] <- c(10, 20, 30)
+parameters[['shrinkage']] <- c(0.01, 0.05, 0.1, 0.5)
+parameters[['interaction.depth']] <- c(1, 2, 3, 5, 10, 20, 30)
 
 # initalize parameter search grid
 results <- buildgrid(parameters)
