@@ -51,6 +51,16 @@ for(subject in subjects){
 }
 dev.off()
 
+filenames <- list.files("train", pattern="Data.*.csv", full.names=TRUE)
+zt <- lapply(filenames, fread)
+dt <- do.call("rbind.data.frame",zt)
+write.table(dt, "full_raw_data.txt", sep=',', col.names=T,row.names=F)
+
+data <- dt[,-c(1,59),with=FALSE]
+cor_idx <- findCorrelation(cor(data), cutoff = 0.9)
+correlated_channels <- names(data)[cor_idx]
+write.table(correlated_channels, "correlated_channels_on_full_train_90.txt", quote=F,col.names=F,row.names=F)
+
 train_sub <- train[16000:25000,]
 train_melted <- melt(train_sub, id.vars=c("Time","FeedBackEvent","Prediction"))
 
@@ -92,9 +102,6 @@ train.orig$label <- TrainLabelsSubj[,2]
 test.orig$label <- TestLabelsSubj[,2]
 
 mod1 <- glm(as.factor(label)~.,data=train.orig, family="binomial")
-
-
-
 #TrainLabels$FeedBackNr <- as.numeric(str_sub(TrainLabels$IdFeedBack,start=-3))
 
 
