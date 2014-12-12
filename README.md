@@ -48,3 +48,39 @@
 47 cz2secmeta rf       1000  100  10       0.5929910
 48 cz2secmeta rf       1000  100  20       0.5967061
 
+  datafolder mlmethod n.iter score    
+1 cz2secmeta bayesglm  10    0.5995258
+2 cz2secmeta bayesglm  30    0.5995258
+3 cz2secmeta bayesglm  50    0.5995258
+4 cz2secmeta bayesglm 100    0.5995258
+5 cz2secmeta bayesglm 200    0.5995258
+
+   datafolder mlmethod maxit decay score    
+1  cz2secmeta multinom 100   1e-04 0.5791961
+2  cz2secmeta multinom 100   1e-03 0.5790870
+3  cz2secmeta multinom 100   1e-02 0.5790158
+4  cz2secmeta multinom 100   1e-01 0.5790093
+5  cz2secmeta multinom 100   0e+00 0.5791954
+6  cz2secmeta multinom 100   1e+00 0.5791644
+7  cz2secmeta multinom 100   1e+01 0.5786355
+8  cz2secmeta multinom 100   1e+02 0.5721571
+9  cz2secmeta multinom 100   1e+04 0.5566658
+10 cz2secmeta multinom 300   1e-04 0.5800951
+11 cz2secmeta multinom 300   1e-03 0.5801175
+12 cz2secmeta multinom 300   1e-02 0.5800647
+13 cz2secmeta multinom 300   1e-01 0.5798194
+14 cz2secmeta multinom 300   0e+00 0.5800952
+15 cz2secmeta multinom 300   1e+00 0.5802619
+16 cz2secmeta multinom 300   1e+01 0.5785481
+17 cz2secmeta multinom 300   1e+02 0.5715522
+18 cz2secmeta multinom 300   1e+04 0.5563079
+19 cz2secmeta multinom 500   1e-04 0.5800951
+20 cz2secmeta multinom 500   1e-03 0.5801175
+21 cz2secmeta multinom 500   1e-02 0.5800647
+22 cz2secmeta multinom 500   1e-01 0.5798194
+23 cz2secmeta multinom 500   0e+00 0.5800952
+24 cz2secmeta multinom 500   1e+00 0.5802619
+25 cz2secmeta multinom 500   1e+01 0.5785481
+26 cz2secmeta multinom 500   1e+02 0.5715522
+27 cz2secmeta multinom 500   1e+04 0.5563079
+
