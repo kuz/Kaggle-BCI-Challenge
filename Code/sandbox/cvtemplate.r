@@ -57,7 +57,12 @@ for (r in 1:nrow(results)) {
     predicted.prob <- predict(classifier, newdata=cvpair$valid, type='prob')$positive
     
     # add record to results table
-    scores <- append(scores, as.numeric(roc(cvpair$valid$class, predicted.prob)$auc))
+    if (is.na(predicted.prob[1])) {
+      cat('WARNING: Was not able to predict probabilities. Deal with it.')
+      scores <- append(scores, -1)
+    } else {
+      scores <- append(scores, as.numeric(roc(cvpair$valid$class, predicted.prob)$auc))
+    }
   }
   
   # store the average score for this set of parameters
