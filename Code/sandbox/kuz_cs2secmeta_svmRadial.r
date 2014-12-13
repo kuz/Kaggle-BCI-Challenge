@@ -73,7 +73,7 @@ for (r in 1:nrow(results)) {
 resultlog <- cbind.data.frame('datafolder'=rep(datafolder, nrow(results)),
                               'mlmethod'=rep(mlmethod, nrow(results)),
                               results)
-sink('../../README.md', append=T)
+sink('../../README.txt', append=T)
 print(resultlog, right=F)
 cat('\n')
 sink()
