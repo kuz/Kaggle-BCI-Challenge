@@ -46,11 +46,11 @@
 45 cz2secmeta rf       1000  100   1       0.5931978
 46 cz2secmeta rf       1000  100   5       0.5961839
 47 cz2secmeta rf       1000  100  10       0.5929910
-48 cz2secmeta rf       1000  100  20       0.5967061
+48 cz2secmeta rf       1000  100  20       0.5967061 0.70353
 
-  datafolder mlmethod n.iter score    
-1 cz2secmeta bayesglm  10    0.5995258
-2 cz2secmeta bayesglm  30    0.5995258
+  datafolder mlmethod n.iter score  
+1 cz2secmeta bayesglm  10    0.5995258 0.72053
+2 cz2secmeta bayesglm  30    0.5995258 (why all other CV scores are same?)
 3 cz2secmeta bayesglm  50    0.5995258
 4 cz2secmeta bayesglm 100    0.5995258
 5 cz2secmeta bayesglm 200    0.5995258
@@ -70,7 +70,7 @@
 12 cz2secmeta multinom 300   1e-02 0.5800647
 13 cz2secmeta multinom 300   1e-01 0.5798194
 14 cz2secmeta multinom 300   0e+00 0.5800952
-15 cz2secmeta multinom 300   1e+00 0.5802619
+15 cz2secmeta multinom 300   1e+00 0.5802619 0.69388
 16 cz2secmeta multinom 300   1e+01 0.5785481
 17 cz2secmeta multinom 300   1e+02 0.5715522
 18 cz2secmeta multinom 300   1e+04 0.5563079
@@ -85,7 +85,7 @@
 27 cz2secmeta multinom 500   1e+04 0.5563079
 
   datafolder mlmethod  C     score    
-1 cz2secmeta svmLinear 1e-04 0.5968234
+1 cz2secmeta svmLinear 1e-04 0.5968234 Not submitted: all "positive"
 2 cz2secmeta svmLinear 1e-03 0.5798744
 3 cz2secmeta svmLinear 1e-02 0.5756099
 4 cz2secmeta svmLinear 1e-01 0.5747934
@@ -132,7 +132,7 @@
 34 cz2secmeta gbm       800    0.01      20                0.6275272
 35 cz2secmeta gbm       800    0.01      30                0.6222868
 36 cz2secmeta gbm       800    0.05       1                0.6214431
-37 cz2secmeta gbm       800    0.05       2                0.6356066
+37 cz2secmeta gbm       800    0.05       2                0.6356066 0.71621
 38 cz2secmeta gbm       800    0.05       3                0.6298090
 39 cz2secmeta gbm       800    0.05       5                0.6185731
 40 cz2secmeta gbm       800    0.05      10                0.6148392
@@ -218,7 +218,7 @@
 34 cz2secmeta svmRadial 1e-01 2e+00 0.5462987
 35 cz2secmeta svmRadial 1e-01 1e+01 0.5166774
 36 cz2secmeta svmRadial 1e-01 1e+02 0.5000000
-37 cz2secmeta svmRadial 1e+00 1e-03 0.5776978
+37 cz2secmeta svmRadial 1e+00 1e-03 0.5776978 0.58568
 38 cz2secmeta svmRadial 1e+00 1e-02 0.5690990
 39 cz2secmeta svmRadial 1e+00 1e-01 0.5597124
 40 cz2secmeta svmRadial 1e+00 2e-01 0.5628739
