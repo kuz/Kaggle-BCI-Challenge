@@ -19,8 +19,8 @@ buildgrid <- function(parameters) {
   nvalues <- prod(sapply(parameters, length))
   
   # initialize resulting table with correct column names and correct number of rows
-  results <- data.frame(matrix(vector(), nvalues, length(names(parameters)) + 1,
-                               dimnames=list(c(), c(names(parameters), 'score'))))
+  results <- data.frame(matrix(vector(), nvalues, length(names(parameters)) + 2,
+                               dimnames=list(c(), c(names(parameters), 'score', 'sd'))))
   
   # loop over parameters
   for (pidx in 1:length(parameters)) {
