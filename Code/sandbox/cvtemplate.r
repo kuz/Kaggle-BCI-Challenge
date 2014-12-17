@@ -29,7 +29,6 @@ buildmodel <- function(p, trainingset) {
 }
 
 
-
 # initalize parameter search grid
 results <- buildgrid(parameters)
 
