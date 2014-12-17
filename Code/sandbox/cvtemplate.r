@@ -1,5 +1,5 @@
 #
-# Template for hold-out-subjects cross-validation. You need to change 3 things here.
+# Template for hold-out-subjects cross-validation. You need to change 5 things here.
 #
 
 library('pROC')
@@ -21,6 +21,7 @@ parameters[['interaction.depth']] <- c(1, 2)
 
 # 4) THIS FUNCITON SHOULD RETURN classifier OBJECT
 # @param p: current set of parameters
+# @param trainingset: set to train model on
 buildmodel <- function(p, trainingset) {
   gbmGrid <-  expand.grid(interaction.depth=p$interaction.depth, n.trees=p$n.trees, shrinkage=p$shrinkage)
   trcontrol <- trainControl(method='none', classProbs=T)
@@ -28,6 +29,16 @@ buildmodel <- function(p, trainingset) {
   return(classifier)
 }
 
+# 5) THIS FUNCITON SHOULD RETURN VECTOR OF PREDICTED PROBABILITIES
+# @param classifier: classifier to use to predict
+# @param validset: set to validate results on
+makeprediction <- function(classifier, validset) {
+  predicted <- predict(classifier, newdata=validset, type='prob')$positive
+  return(predicted)
+}
+
+
+# --- In happy circumstances you should not look below this line --- #
 
 # initalize parameter search grid
 results <- buildgrid(parameters)
@@ -52,8 +63,8 @@ for (r in 1:nrow(results)) {
     # train a model
     classifier <- buildmodel(p, cvpair$train)
     
-    # made a prediciton on a validation set
-    predicted.prob <- predict(classifier, newdata=cvpair$valid, type='prob')$positive
+    # make a prediciton on a validation set
+    predicted.prob <- makeprediction(classifier, cvpair$valid)
     
     # add record to results table
     if (is.na(predicted.prob[1])) {
@@ -66,6 +77,7 @@ for (r in 1:nrow(results)) {
   
   # store the average score for this set of parameters
   results[r, 'score'] <- mean(scores)
+  results[r, 'sd'] <- sd(scores)
   
 }
 
@@ -73,7 +85,7 @@ for (r in 1:nrow(results)) {
 resultlog <- cbind.data.frame('datafolder'=rep(datafolder, nrow(results)),
                               'mlmethod'=rep(mlmethod, nrow(results)),
                               results)
-sink('../../README.md', append=T)
+sink('../../README.txt', append=T)
 print(resultlog, right=F)
 cat('\n')
 sink()
