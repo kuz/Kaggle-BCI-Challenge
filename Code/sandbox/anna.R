@@ -6,6 +6,7 @@ library(randomForest)
 library(reshape2)
 library(xtable)
 library(ggplot2)
+library(reshape2)
 
 
 setwd("/Users/annaleontjeva/Desktop/My_files/Kaggle-BCI-Challenge/Data")
@@ -165,8 +166,8 @@ fft_per_ch_per_slice <- function(dt, window_size=200, step=200){
   fft_per_ch_per_slice <- c()
   for(electrode in 2:(ncol(dt)-2)){
     print(electrode)
-    fft_per_slice <- pieces(dt[,electrode],window_size,step)
-    fft_per_ch_per_slice <- cbind(fft_per_ch_per_slice,fft_per_slice)
+    fft_per_slice <- pieces(dt[,electrode], window_size, step)
+    fft_per_ch_per_slice <- cbind(fft_per_ch_per_slice, fft_per_slice)
   }
   return(fft_per_ch_per_slice)
 }
@@ -209,3 +210,103 @@ melted_fft_pos_feedback <- melt(data=fft_positive_feedback_800_lbled)
 #       aes(x=fft_positive_feedback_800_lbled$A_1,y=fft_positive_feedback_800_lbled$A_2))+geom_line()+theme_bw()
 
 list.files()
+
+#---------------------------#
+#
+#  Extract cross-validation pairs (training, validation) such that division is base on subjects
+#
+
+# load libraries
+library('data.table')
+
+# load data
+train.path <- '../../Data/raw/train'
+train.files <- dir(train.path, pattern='Data_.*\\.csv', full.names=T)
+train.subjs <- as.numeric(substr(train.files, 28, 29))
+train.sess <- as.numeric(substr(train.files, 35, 36))
+
+# Labels from TrainLabels file for this session
+feedback_labels <- fread('../../Data/TrainLabels.csv', sep = ',') #number of feedbacks for first subject
+
+iter <- 1
+for(subject in unique(train.subjs)){  
+  if(subject<10){
+   ptrn <- paste('Data_S0',subject,".*\\.csv",sep='')
+  } else {
+   ptrn <- paste('Data_S',subject,".*\\.csv",sep='')  
+  }  
+  train.files <- dir(train.path, pattern=ptrn, full.names=T)
+  train.tables <- lapply(train.files, fread)
+  train.nrows <- sapply(train.tables, nrow)
+
+  for (i in 1:length(train.tables)) {
+    train.tables[[i]] = cbind.data.frame(train.tables[[i]], 'Session'=rep(train.sess[[i]]),
+                                       'Subject'=rep(train.subjs[i], train.nrows[i]))
+  }
+  train.orig <- do.call(rbind, train.tables)
+
+#test.path <- '../../Data/raw/test'
+#test.files <- dir(test.path, pattern='Data_S04.*\\.csv', full.names=T)
+#test.tables <- lapply(test.files, fread)
+#test.nrows <- sapply(test.tables, nrow)
+#test.subjs <- as.numeric(substr(test.files, 27, 28))
+#test.sess <- as.numeric(substr(test.files, 34, 35))
+#for (i in 1:length(test.tables)) {
+#  test.tables[[i]] = cbind.data.frame(test.tables[[i]], 'Session'=rep(test.sess[[i]]),
+#                                      'Subject'=rep(test.subjs[i], test.nrows[i]))
+#}
+#test.orig <- do.call(rbind, test.tables)
+
+# Indexes of feedback event
+ feedback_labels_subject <- seq(from=1, to=5440, by=340)[iter:(iter+1)]
+ feedback_strt_indx <- which(train.orig$FeedBackEvent == 1)
+ positive_feedback_indexes <- feedback_strt_indx[which(feedback_labels_subject$Prediction == 1)]
+ negative_feedback_indexes <- feedback_strt_indx[which(feedback_labels_subject$Prediction == 0)]
+
+# List of stimulus triggering data.frames for each feedback event in the session
+ positive_window_list <- lapply(positive_feedback_indexes, function(x) as.data.frame(train.orig)[(x - 1000):(x + 1000),2:(ncol(train.orig)-2)]) #1000/200=5 sec
+ negative_window_list <- lapply(negative_feedback_indexes, function(x) as.data.frame(train.orig)[(x - 1000):(x + 1000),2:(ncol(train.orig)-2)])
+
+# Merge list of data.frame into one data.frame
+#positive_window_matrix <- abind(positive_window_list, along=3)
+#negative_window_matrix <- abind(negative_window_list, along=3)
+#positive_window_matrix <- do.call('rbind', positive_window_list)
+#negative_window_matrix <- do.call('rbind', negative_window_list)
+
+#one_element <- c()
+#for(i in 1:length(positive_window_list)){
+#  one_element <- c(one_element, positive_window_list[[i]][1,1])
+#}
+#mean(one_element)
+
+ positive_window_average <- Reduce("+", positive_window_list) / length(positive_window_list)
+ negative_window_average <- Reduce("+", negative_window_list) / length(negative_window_list)
+
+# Melting positive window average
+ melt_positive_average <- melt(positive_window_average)
+#head(melt_positive_average)
+
+# Melting negative window average
+ melt_negative_average <- melt(negative_window_average)
+#head(melt_negative_average)
+
+# Adding time for melted positive data set 
+melt_positive_average$Time <- rep(as.data.frame(train.orig)[1:2001, 1], (length(train.orig[1,])-3))
+melt_positive_average$Feedback_type <- as.factor(rep(1, nrow(melt_positive_average)))
+#head(melt_positive_average)
+
+# Adding time for melted negative data set 
+melt_negative_average$Time <- rep(as.data.frame(train.orig)[1:2001, 1], (length(train.orig[1,])-3))
+melt_negative_average$Feedback_type <- as.factor(rep(0, nrow(melt_positive_average)))
+#head(melt_negative_average)
+
+melt_average <- rbind(melt_positive_average, melt_negative_average)
+#str(melt_average)
+
+ file_name <- paste("../../Figures/stimululs_trigger_average_S0", subject, "_per_feedback_type.pdf",sep='')
+ pdf(file=file_name)
+ ggplot(melt_average, aes(x = Time, y = value, group = Feedback_type, colour = Feedback_type)) + 
+  geom_line() + theme_bw()+
+  facet_wrap(~variable)
+ dev.off()
+}

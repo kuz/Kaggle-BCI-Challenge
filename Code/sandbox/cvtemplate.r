@@ -40,7 +40,6 @@ makeprediction <- function(classifier, validset) {
 
 # --- In happy circumstances you should not look below this line --- #
 
-
 # initalize parameter search grid
 results <- buildgrid(parameters)
 
