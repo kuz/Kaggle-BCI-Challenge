@@ -7,7 +7,7 @@ library('pROC')
 source('../functions.r')
 
 # 1) SPECIFY THE DATA FOLDER (WITH THE dataset.rds FILE PRODUCED BY ONE OF Code/preprocessing/extract_*.r SCRIPTS)
-datafolder <- 'cz2secmeta'
+datafolder <- 'cz2sec_pca_meta'
 dataset <- readRDS(paste('../../Data/', datafolder, '/dataset.rds', sep=''))
 
 # 2) ENLIST PARAMETERS HERE
