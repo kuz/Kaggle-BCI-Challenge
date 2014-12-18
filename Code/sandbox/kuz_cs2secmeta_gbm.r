@@ -49,6 +49,7 @@ for (r in 1:nrow(results)) {
   
   # store the average score for this set of parameters
   results[r, 'score'] <- mean(scores)
+  results[r, 'sd'] <- mean(sd)
   
 }
 
