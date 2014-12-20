@@ -350,3 +350,73 @@
 83 cz2sec_pca_meta gbm      1200    0.50      20                0.5859241 NA
 84 cz2sec_pca_meta gbm      1200    0.50      30                0.6003782 NA
 
+   datafolder mlmethod  C     scale score     sd         
+1  cz2secmeta svmLinear 1e-04  TRUE 0.5970298 0.050524931
+2  cz2secmeta svmLinear 1e-04 FALSE 0.5633377 0.030965872
+3  cz2secmeta svmLinear 1e-03  TRUE 0.5799783 0.038061806
+4  cz2secmeta svmLinear 1e-03 FALSE 0.5443321 0.018659323
+5  cz2secmeta svmLinear 1e-02  TRUE 0.5745904 0.027011493
+6  cz2secmeta svmLinear 1e-02 FALSE 0.5341595 0.024767735
+7  cz2secmeta svmLinear 1e-01  TRUE 0.5747002 0.031275363
+8  cz2secmeta svmLinear 1e-01 FALSE 0.5281140 0.023394025
+9  cz2secmeta svmLinear 1e+00  TRUE 0.5555115 0.027928255
+10 cz2secmeta svmLinear 1e+00 FALSE 0.5350754 0.014805801
+11 cz2secmeta svmLinear 1e+01  TRUE 0.5694099 0.025100788
+12 cz2secmeta svmLinear 1e+01 FALSE 0.5357559 0.022056660
+13 cz2secmeta svmLinear 1e+02  TRUE 0.5527856 0.037487995
+14 cz2secmeta svmLinear 1e+02 FALSE 0.5391039 0.012666006
+15 cz2secmeta svmLinear 1e+03  TRUE 0.5427323 0.028940992
+16 cz2secmeta svmLinear 1e+03 FALSE 0.5328704 0.037187997
+17 cz2secmeta svmLinear 1e+04  TRUE 0.5298907 0.002764057
+18 cz2secmeta svmLinear 1e+04 FALSE 0.5275937 0.037710646
+
+   datafolder mlmethod ntree mtry nodesize score     sd
+1  cz2sec     rf        200   10   1       0.5560993 NA
+2  cz2sec     rf        200   10   5       0.5587299 NA
+3  cz2sec     rf        200   10  10       0.5551776 NA
+4  cz2sec     rf        200   10  20       0.5681804 NA
+5  cz2sec     rf        200   30   1       0.5581239 NA
+6  cz2sec     rf        200   30   5       0.5606107 NA
+7  cz2sec     rf        200   30  10       0.5607146 NA
+8  cz2sec     rf        200   30  20       0.5688971 NA
+9  cz2sec     rf        200   70   1       0.5572423 NA
+10 cz2sec     rf        200   70   5       0.5614667 NA
+11 cz2sec     rf        200   70  10       0.5603229 NA
+12 cz2sec     rf        200   70  20       0.5736101 NA
+13 cz2sec     rf        200  100   1       0.5602152 NA
+14 cz2sec     rf        200  100   5       0.5603925 NA
+15 cz2sec     rf        200  100  10       0.5600394 NA
+16 cz2sec     rf        200  100  20       0.5695741 NA
+17 cz2sec     rf        500   10   1       0.5581483 NA
+18 cz2sec     rf        500   10   5       0.5579141 NA
+19 cz2sec     rf        500   10  10       0.5599746 NA
+20 cz2sec     rf        500   10  20       0.5688760 NA
+21 cz2sec     rf        500   30   1       0.5605326 NA
+22 cz2sec     rf        500   30   5       0.5599776 NA
+23 cz2sec     rf        500   30  10       0.5609930 NA
+24 cz2sec     rf        500   30  20       0.5757781 NA 0.57118
+25 cz2sec     rf        500   70   1       0.5620085 NA
+26 cz2sec     rf        500   70   5       0.5598173 NA
+27 cz2sec     rf        500   70  10       0.5617117 NA
+28 cz2sec     rf        500   70  20       0.5670074 NA
+29 cz2sec     rf        500  100   1       0.5606518 NA
+30 cz2sec     rf        500  100   5       0.5628660 NA
+31 cz2sec     rf        500  100  10       0.5595859 NA
+32 cz2sec     rf        500  100  20       0.5725108 NA
+33 cz2sec     rf       1000   10   1       0.5592443 NA
+34 cz2sec     rf       1000   10   5       0.5589863 NA
+35 cz2sec     rf       1000   10  10       0.5582736 NA
+36 cz2sec     rf       1000   10  20       0.5662215 NA
+37 cz2sec     rf       1000   30   1       0.5610068 NA
+38 cz2sec     rf       1000   30   5       0.5601779 NA
+39 cz2sec     rf       1000   30  10       0.5609192 NA
+40 cz2sec     rf       1000   30  20       0.5728776 NA
+41 cz2sec     rf       1000   70   1       0.5597315 NA
+42 cz2sec     rf       1000   70   5       0.5580938 NA
+43 cz2sec     rf       1000   70  10       0.5607760 NA
+44 cz2sec     rf       1000   70  20       0.5725973 NA
+45 cz2sec     rf       1000  100   1       0.5609937 NA
+46 cz2sec     rf       1000  100   5       0.5605672 NA
+47 cz2sec     rf       1000  100  10       0.5610812 NA
+48 cz2sec     rf       1000  100  20       0.5751507 NA
+
