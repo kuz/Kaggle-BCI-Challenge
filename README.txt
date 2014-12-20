@@ -267,7 +267,7 @@
    datafolder      mlmethod n.trees shrinkage interaction.depth score     sd
 1  cz2sec_pca_meta gbm       500    0.01       1                0.6314153 NA
 2  cz2sec_pca_meta gbm       500    0.01       2                0.6503734 NA
-3  cz2sec_pca_meta gbm       500    0.01       3                0.6546906 NA 0.65469
+3  cz2sec_pca_meta gbm       500    0.01       3                0.6546906 NA 0.64513
 4  cz2sec_pca_meta gbm       500    0.01       5                0.6494499 NA
 5  cz2sec_pca_meta gbm       500    0.01      10                0.6460310 NA
 6  cz2sec_pca_meta gbm       500    0.01      20                0.6391404 NA
