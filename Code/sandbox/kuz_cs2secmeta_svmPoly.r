@@ -17,7 +17,7 @@ mlmethod <- 'svmPoly'
 parameters <- list()
 parameters[['C']] <- c(0.0001, 0.001, 0.01, 0.1, 1, 10, 100, 1000, 10000)
 parameters[['scale']] <- c(T, F)
-parameters[['degree']] <- c(2, 3, 4, 5)
+parameters[['degree']] <- c(2, 3, 4)
 
 # 4) THIS FUNCITON SHOULD RETURN classifier OBJECT
 # @param p: current set of parameters

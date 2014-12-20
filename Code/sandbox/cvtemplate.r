@@ -6,6 +6,10 @@ library('pROC')
 library('caret')
 source('../functions.r')
 
+# On the server the global package directory is not writable
+# you might want to specify your local one here
+.libPaths('/home/kuzovkin/R/x86_64-unknown-linux-gnu-library/3.0')
+
 # 1) SPECIFY THE DATA FOLDER (WITH THE dataset.rds FILE PRODUCED BY ONE OF Code/preprocessing/extract_*.r SCRIPTS)
 datafolder <- 'cz2secmeta'
 dataset <- readRDS(paste('../../Data/', datafolder, '/dataset.rds', sep=''))

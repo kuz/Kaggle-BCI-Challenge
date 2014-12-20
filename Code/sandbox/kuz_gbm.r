@@ -2,19 +2,19 @@
 # Template for hold-out-subjects cross-validation. You need to change 5 things here.
 #
 
-library('randomForest')
+library('caret')
 library('pROC')
 source('../functions.r')
 
 # 1) SPECIFY THE DATA FOLDER (WITH THE dataset.rds FILE PRODUCED BY ONE OF Code/preprocessing/extract_*.r SCRIPTS)
-datafolder <- 'cz2secmeta'
+datafolder <- 'cz2sec'
 dataset <- readRDS(paste('../../Data/', datafolder, '/dataset.rds', sep=''))
 
 # 2) ENLIST PARAMETERS HERE
 parameters <- list()
-parameters[['ntree']] <- c(200, 500, 1000)
-parameters[['mtry']] <- c(10, 30, 70, 100)
-parameters[['nodesize']] <- c(1, 5, 10, 20)
+parameters[['n.trees']] <- c(500, 800, 1200)
+parameters[['shrinkage']] <- c(0.01, 0.05, 0.1, 0.5)
+parameters[['interaction.depth']] <- c(1, 2, 3, 5, 10, 20, 30)
 
 # initalize parameter search grid
 results <- buildgrid(parameters)
@@ -36,11 +36,12 @@ for (r in 1:nrow(results)) {
   for (cvpair in dataset$cvpairs) {
     
     # 3) PRODUCE AN OBJECT classifier HERE
-    classifier <- randomForest(class ~ ., data=cvpair$train, ntree=p$ntree, mtry=p$mtry, nodesize=p$nodesize,
-                               do.trace=T)
+    gbmGrid <-  expand.grid(interaction.depth=p$interaction.depth, n.trees=p$n.trees, shrinkage=p$shrinkage)
+    trcontrol <- trainControl(method='none')
+    classifier <- train(class ~., data = cvpair$train, 'gbm', trControl=trcontrol, tuneGrid = gbmGrid)
     
     # made a prediciton on a validation set
-    predicted.prob <- predict(classifier, newdata=cvpair$valid, type='prob')[,2]
+    predicted.prob <- predict(classifier, newdata=cvpair$valid, type='prob')$positive
     
     # add record to results table
     scores <- append(scores, as.numeric(roc(cvpair$valid$class, predicted.prob)$auc))
@@ -48,11 +49,12 @@ for (r in 1:nrow(results)) {
   
   # store the average score for this set of parameters
   results[r, 'score'] <- mean(scores)
+  results[r, 'sd'] <- mean(sd)
   
 }
 
 # 4) SPECIFY THE METHOD YOU USED FOR THE HISTORY
-mlmethod <- 'rf'
+mlmethod <- 'gbm'
 
 # store the results of this run
 resultlog <- cbind.data.frame('datafolder'=rep(datafolder, nrow(results)),
@@ -68,11 +70,12 @@ best.idx <- which.max(results$score)
 p <- results[best.idx, ]
 
 # 5) PRODUCE AN OBJECT classifier HERE (USE THE FULL TRAINING SET)
-classifier <- randomForest(class ~ ., data=dataset$train, ntree=p$ntree, mtry=p$mtry, nodesize=p$nodesize,
-                           do.trace=T)
+gbmGrid <-  expand.grid(interaction.depth=p$interaction.depth, n.trees=p$n.trees, shrinkage=p$shrinkage)
+trcontrol <- trainControl(method='none')
+classifier <- train(class ~., data = dataset$train, 'gbm', trControl=trcontrol, tuneGrid = gbmGrid)
 
 # predict on test dataset and store the file
-predicted   <- predict(classifier, newdata=dataset$test, type="prob")[,2]
+predicted   <- predict(classifier, newdata=dataset$test, type="prob")$positive
 result <- data.frame(read.table('../../Results/SampleSubmission.csv', sep = ',', header = T))
 result$Prediction = predicted
 write.table(result, paste('../../Results/subX_', datafolder, '_', mlmethod, '.csv', sep=''), sep = ',', quote = F, row.names = F, col.names = T)
