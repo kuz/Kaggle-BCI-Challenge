@@ -2,7 +2,8 @@
 #  Extract cross-validation pairs (training, validation) such that division is base on subjects
 #
 
-library('caret')
+# load libraries
+.libPaths('/home/kuzovkin/R/x86_64-unknown-linux-gnu-library/3.0')
 library('data.table')
 
 # load data
@@ -76,10 +77,33 @@ cvpairs[[2]] <- extractpair(c(5:8))
 cvpairs[[3]] <- extractpair(c(9:12))
 cvpairs[[4]] <- extractpair(c(13:16))
 
+# prepare train set column names and factors
+train.orig[, ncol(train.orig)] <- as.factor(train.orig[, ncol(train.orig)])
+train.orig$Subject <- NULL
+colnames(train.orig) <- c(paste("A_", 1:(length(colnames(train.orig)) - 1), sep=""), 'class')
+train.orig$class <- as.factor(ifelse(train.orig$class == 1, "positive", "negative"))
+
+# prepare test set column names
+colnames(test.orig) <- c(paste("A_", 1:(length(colnames(test.orig))), sep=""))
+
 # store the resulting dataset
-dataset = list('cvpairs'=cvpairs, 'test'=test.orig)
+dataset = list('cvpairs'=cvpairs, 'test'=test.orig, 'train'=train.orig)
 folder = 'cz2sec'
 system(paste('mkdir ../../Data/', folder, sep=''))
 saveRDS(dataset, paste('../../Data/', folder, '/dataset.rds', sep=''))
 
-x
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
