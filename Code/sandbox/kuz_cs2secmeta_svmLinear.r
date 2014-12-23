@@ -97,7 +97,7 @@ p <- results[best.idx, ]
 classifier <- buildmodel(p, dataset$train)
 
 # predict on test dataset and store the file
-predicted   <- predict(classifier, newdata=dataset$test, type="prob")$positive
+predicted <- makeprediction(classifier, dataset$test)
 result <- data.frame(read.table('../../Results/SampleSubmission.csv', sep = ',', header = T))
 result$Prediction = predicted
 write.table(result, paste('../../Results/subX_', datafolder, '_', mlmethod, '.csv', sep=''), sep = ',', quote = F, row.names = F, col.names = T)
