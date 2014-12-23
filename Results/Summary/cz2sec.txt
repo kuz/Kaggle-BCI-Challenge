@@ -55,7 +55,7 @@
 4  cz2sec     gbm       500    0.01       5                0.5523778 NA
 5  cz2sec     gbm       500    0.01      10                0.5610028 NA
 6  cz2sec     gbm       500    0.01      20                0.5633512 NA
-7  cz2sec     gbm       500    0.01      30                0.5644534 NA
+7  cz2sec     gbm       500    0.01      30                0.5644534 NA 0.56884
 8  cz2sec     gbm       500    0.05       1                0.5364062 NA
 9  cz2sec     gbm       500    0.05       2                0.5445660 NA
 10 cz2sec     gbm       500    0.05       3                0.5509775 NA
