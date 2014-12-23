@@ -253,26 +253,6 @@
 80 cz2secmeta svmRadial 1e+04 1e+01 0.5302616
 81 cz2secmeta svmRadial 1e+04 1e+02 0.5000000
 
-   datafolder mlmethod  C     scale score     sd         
-1  cz2secmeta svmLinear 1e-04  TRUE 0.5970298 0.050524931 0.62847
-2  cz2secmeta svmLinear 1e-04 FALSE 0.5633377 0.030965872
-3  cz2secmeta svmLinear 1e-03  TRUE 0.5799783 0.038061806
-4  cz2secmeta svmLinear 1e-03 FALSE 0.5443321 0.018659323
-5  cz2secmeta svmLinear 1e-02  TRUE 0.5745904 0.027011493
-6  cz2secmeta svmLinear 1e-02 FALSE 0.5341595 0.024767735
-7  cz2secmeta svmLinear 1e-01  TRUE 0.5747002 0.031275363
-8  cz2secmeta svmLinear 1e-01 FALSE 0.5281140 0.023394025
-9  cz2secmeta svmLinear 1e+00  TRUE 0.5555115 0.027928255
-10 cz2secmeta svmLinear 1e+00 FALSE 0.5350754 0.014805801
-11 cz2secmeta svmLinear 1e+01  TRUE 0.5694099 0.025100788
-12 cz2secmeta svmLinear 1e+01 FALSE 0.5357559 0.022056660
-13 cz2secmeta svmLinear 1e+02  TRUE 0.5527856 0.037487995
-14 cz2secmeta svmLinear 1e+02 FALSE 0.5391039 0.012666006
-15 cz2secmeta svmLinear 1e+03  TRUE 0.5427323 0.028940992
-16 cz2secmeta svmLinear 1e+03 FALSE 0.5328704 0.037187997
-17 cz2secmeta svmLinear 1e+04  TRUE 0.5298907 0.002764057
-18 cz2secmeta svmLinear 1e+04 FALSE 0.5275937 0.037710646
-
     datafolder mlmethod  C     scale gamma score     sd        
 1   cz2secmeta svmRadial 1e-04  TRUE 1e-03 0.5513244 0.03257455
 2   cz2secmeta svmRadial 1e-04  TRUE 1e-02 0.5222294 0.01034029
@@ -438,7 +418,7 @@
 162 cz2secmeta svmRadial 1e+04 FALSE 1e+02 0.5000000 0.00000000
 
    datafolder mlmethod  C     scale score     sd         
-1  cz2secmeta svmLinear 1e-04  TRUE 0.5970421 0.050506112
+1  cz2secmeta svmLinear 1e-04  TRUE 0.5970421 0.050506112 0.62847
 2  cz2secmeta svmLinear 1e-04 FALSE 0.5633342 0.030969922
 3  cz2secmeta svmLinear 1e-03  TRUE 0.5799756 0.038066158
 4  cz2secmeta svmLinear 1e-03 FALSE 0.5443321 0.018659323
@@ -455,4 +435,43 @@
 15 cz2secmeta svmLinear 1e+03  TRUE 0.5427323 0.028940992
 16 cz2secmeta svmLinear 1e+03 FALSE 0.5328704 0.037187997
 17 cz2secmeta svmLinear 1e+04  TRUE 0.5298907 0.002764057
-18 cz2secmeta svmLinear 1e+04 FALSE 0.5275937 0.037710646
+18 cz2secmeta svmLinear 1e+04 FALSE 0.5275937 0.037710646  datafolder mlmethod n.trees shrinkage interaction.depth
+1 cz2secmeta gbm      10      0.01      1                
+2 cz2secmeta gbm      10      0.01      2                
+3 cz2secmeta gbm      10      0.05      1                
+4 cz2secmeta gbm      10      0.05      2                
+5 cz2secmeta gbm      20      0.01      1                
+6 cz2secmeta gbm      20      0.01      2                
+7 cz2secmeta gbm      20      0.05      1                
+8 cz2secmeta gbm      20      0.05      2                
+
+  datafolder mlmethod n.trees shrinkage interaction.depth score     sd        
+1 cz2secmeta gbm      10      0.01      1                 0.5580963 0.05586041
+2 cz2secmeta gbm      10      0.01      2                 0.5431111 0.03799812
+3 cz2secmeta gbm      10      0.05      1                 0.5520806 0.04398182
+4 cz2secmeta gbm      10      0.05      2                 0.5578221 0.05768823
+5 cz2secmeta gbm      20      0.01      1                 0.5571407 0.05451391
+6 cz2secmeta gbm      20      0.01      2                 0.5560680 0.05775446
+7 cz2secmeta gbm      20      0.05      1                 0.5566810 0.02392922
+8 cz2secmeta gbm      20      0.05      2                 0.5720957 0.03543646
+
+  datafolder mlmethod n.trees shrinkage interaction.depth score     sd        
+1 cz2secmeta gbm      10      0.01      1                 0.5484583 0.06692815
+2 cz2secmeta gbm      10      0.01      2                 0.5519291 0.04812793
+3 cz2secmeta gbm      10      0.05      1                 0.5550826 0.02179013
+4 cz2secmeta gbm      10      0.05      2                 0.5531133 0.03442609
+5 cz2secmeta gbm      20      0.01      1                 0.5419739 0.03988923
+6 cz2secmeta gbm      20      0.01      2                 0.5480828 0.03668800
+7 cz2secmeta gbm      20      0.05      1                 0.5648452 0.02812470
+8 cz2secmeta gbm      20      0.05      2                 0.5566870 0.05282454
+
+  datafolder mlmethod n.trees shrinkage interaction.depth score     sd        
+1 cz2secmeta gbm      10      0.01      1                 0.5303014 0.04460783
+2 cz2secmeta gbm      10      0.01      2                 0.5304772 0.03358809
+3 cz2secmeta gbm      10      0.05      1                 0.5654836 0.05864108
+4 cz2secmeta gbm      10      0.05      2                 0.5429361 0.04320202
+5 cz2secmeta gbm      20      0.01      1                 0.5415800 0.03937665
+6 cz2secmeta gbm      20      0.01      2                 0.5424025 0.03813716
+7 cz2secmeta gbm      20      0.05      1                 0.5502017 0.04290595
+8 cz2secmeta gbm      20      0.05      2                 0.5741829 0.03049241
+

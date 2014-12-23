@@ -1,10 +1,10 @@
 #
-# Template for hold-out-subjects cross-validation. You need to change 6 things here.
+# Template for hold-out-subjects cross-validation. You need to change 5 things here.
 #
 
-# 1) SPECIFIFY PACKAGES TO USE DURING LEARNING HERE
+# SPECIFIFY PACKAGES TO USE DURING LEARNING HERE
 # this is needed because we need to pass them to each parallel cluster separately
-packages=c('pROC', 'caret')
+packages=c('pROC', 'randomForest')
 
 library('foreach')
 library('doParallel')
@@ -18,40 +18,38 @@ for (pkg in packages) {
 # you might want to specify your local one here
 .libPaths('/home/kuzovkin/R/x86_64-unknown-linux-gnu-library/3.0')
 
-# 2) SPECIFY THE DATA FOLDER (WITH THE dataset.rds FILE PRODUCED BY ONE OF Code/preprocessing/extract_*.r SCRIPTS)
-datafolder <- 'cz2secmeta'
+# 1) SPECIFY THE DATA FOLDER (WITH THE dataset.rds FILE PRODUCED BY ONE OF Code/preprocessing/extract_*.r SCRIPTS)
+datafolder <- 'cz2sec'
 dataset <- readRDS(paste('../../Data/', datafolder, '/dataset.rds', sep=''))
 
-# 3) SPECIFY THE METHOD YOU USE (NEEDED JUST FOR RECORD)
-mlmethod <- 'gbm'
+# 2) SPECIFY THE METHOD YOU USE (NEEDED JUST FOR RECORD)
+mlmethod <- 'rf'
 
-# 4) ENLIST PARAMETERS HERE
+# 3) ENLIST PARAMETERS HERE
 parameters <- list()
-parameters[['n.trees']] <- c(10, 20)
-parameters[['shrinkage']] <- c(0.01, 0.05)
-parameters[['interaction.depth']] <- c(1, 2)
+parameters[['ntree']] <- c(50, 60, 70, 80, 90, 100, 110, 120, 130, 140)
+parameters[['mtry']] <- c(4)
+parameters[['nodesize']] <- c(2)
 
-# 5) THIS FUNCITON SHOULD RETURN classifier OBJECT
+# 4) THIS FUNCITON SHOULD RETURN classifier OBJECT
 # @param p: current set of parameters
 # @param trainingset: set to train model on
 buildmodel <- function(p, trainingset) {
-  gbmGrid <-  expand.grid(interaction.depth=p$interaction.depth, n.trees=p$n.trees, shrinkage=p$shrinkage)
-  trcontrol <- trainControl(method='none', classProbs=T)
-  classifier <- train(class ~., data=trainingset, 'gbm', trControl=trcontrol, tuneGrid = gbmGrid)
+  classifier <- randomForest(class ~ ., data=trainingset, ntree=p$ntree, mtry=p$mtry,
+                             nodesize=p$nodesize, do.trace=T)
   return(classifier)
 }
 
-# 6) THIS FUNCITON SHOULD RETURN VECTOR OF PREDICTED PROBABILITIES
+# 5) THIS FUNCITON SHOULD RETURN VECTOR OF PREDICTED PROBABILITIES
 # @param classifier: classifier to use to predict
 # @param validset: set to validate results on
 makeprediction <- function(classifier, validset) {
-  predicted <- predict(classifier, newdata=validset, type='prob')$positive
+  predicted <- predict(classifier, newdata=validset, type='prob')[,2]
   return(predicted)
 }
 
 
-
-# ------- In happy circumstances you should not look below this line ------- #
+# --- In happy circumstances you should not look below this line --- #
 
 # configure parallel foreach execution
 ncores <- floor(detectCores() * 0.7)
@@ -61,20 +59,20 @@ registerDoParallel(cl)
 # initalize parameter search grid
 results <- buildgrid(parameters)
 
-# log file name
-logfile = paste('logs/', format(Sys.time(), "%Y-%m-%d-%H%M%S"), '_', datafolder, '_', mlmethod, '.txt', sep='')
+
+loopstart <- Sys.time()
 
 # loop over all combinations of parameters
+#for (r in 1:nrow(results)) {
 cvscores <- foreach(r = 1:nrow(results), .combine='rbind', .packages=packages) %dopar% {
- 
+  
   # read in current parameter set
   p <- results[r, ]
   
-  # sink progress output to log file
-  sink(logfile, append=T)
-  Sys.sleep(runif(1))
+  # display progress
   cat('Set of parameters', r, 'out of', nrow(results), '\n')
-  sink()
+  print(p)
+  cat('------------------------------\n')
   
   # here we store scores for current parameter set
   scores <- c()
@@ -99,10 +97,15 @@ cvscores <- foreach(r = 1:nrow(results), .combine='rbind', .packages=packages) %
   
   # store the average score for this set of parameters
   data.frame('score'=mean(scores), 'sd'=sd(scores))
-
+  #results[r, 'score'] <- mean(scores)
+  #results[r, 'sd'] <- sd(scores)
+  
 }
 
-# combine results
+cat('Loop took ')
+cat(Sys.time() - loopstart)
+cat('\n')
+
 results$score <- cvscores$score
 results$sd <- cvscores$sd
 
