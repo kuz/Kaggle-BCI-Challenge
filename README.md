@@ -1,5 +1,5 @@
-Kaggle BCI Competition
-======================
+Kaggle BCI Challenge
+====================
 
 Cross-validation results
 ------------------------
