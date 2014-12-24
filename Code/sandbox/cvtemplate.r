@@ -54,7 +54,7 @@ makeprediction <- function(classifier, validset) {
 # ------- In happy circumstances you should not look below this line ------- #
 
 # configure parallel foreach execution
-ncores <- floor(detectCores() * 0.7)
+ncores <- floor(detectCores() * 0.5)
 cl <- makeCluster(ncores)
 registerDoParallel(cl)
 
@@ -65,6 +65,7 @@ results <- buildgrid(parameters)
 logfile = paste('logs/', format(Sys.time(), "%Y-%m-%d-%H%M%S"), '_', datafolder, '_', mlmethod, '.txt', sep='')
 
 # loop over all combinations of parameters
+timestart <- Sys.time()
 cvscores <- foreach(r = 1:nrow(results), .combine='rbind', .packages=packages) %dopar% {
  
   # read in current parameter set
@@ -73,11 +74,12 @@ cvscores <- foreach(r = 1:nrow(results), .combine='rbind', .packages=packages) %
   # sink progress output to log file
   sink(logfile, append=T)
   Sys.sleep(runif(1))
-  cat('Set of parameters', r, 'out of', nrow(results), '\n')
+  cat('Starting set of parameters', r, 'out of', nrow(results), '\n')
   sink()
   
   # here we store scores for current parameter set
-  scores <- c()
+  scores.out <- c()
+  scores.in <- c()
   
   # loop over cross-validation (training, validation) pairs
   for (cvpair in dataset$cvpairs) {
@@ -85,25 +87,38 @@ cvscores <- foreach(r = 1:nrow(results), .combine='rbind', .packages=packages) %
     # train a model
     classifier <- buildmodel(p, cvpair$train)
     
-    # make a prediciton on a validation set
-    predicted.prob <- makeprediction(classifier, cvpair$valid)
+    # make a prediciton on a validation and training sets
+    predicted.prob.out <- makeprediction(classifier, cvpair$valid)
+    predicted.prob.in <-  makeprediction(classifier, cvpair$train)
     
     # add record to results table
-    if (is.na(predicted.prob[1])) {
+    if (is.na(predicted.prob.out[1])) {
       cat('WARNING: Was not able to predict probabilities. Deal with it.')
-      scores <- append(scores, -1)
+      scores.out <- append(scores.out, -1)
+      scores.in <- append(scores.in, -1)
     } else {
-      scores <- append(scores, as.numeric(roc(cvpair$valid$class, predicted.prob)$auc))
+      scores.out <- append(scores.out, as.numeric(roc(cvpair$valid$class, predicted.prob.out)$auc))
+      scores.in  <- append(scores.in,  as.numeric(roc(cvpair$train$class, predicted.prob.in)$auc))
     }
   }
   
+  # log that current set of parameters is complete
+  sink(logfile, append=T)
+  Sys.sleep(runif(1))
+  cat('Done on set of parameters', r, 'out of', nrow(results), '\n')
+  sink()
+  
   # store the average score for this set of parameters
-  data.frame('score'=mean(scores), 'sd'=sd(scores))
+  data.frame('inscore'=mean(scores.in), 'outscore'=mean(scores.out), 'sd'=sd(scores))
 
 }
 
+# Tell how long the whole process took
+print(Sys.time() - timestart)
+
 # combine results
-results$score <- cvscores$score
+results$inscore <- cvscores$inscore
+results$outscore <- cvscores$outscore
 results$sd <- cvscores$sd
 
 # stop parallel processing cluster
