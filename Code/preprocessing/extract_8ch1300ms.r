@@ -2,7 +2,7 @@
 #  Extract cross-validation pairs (training, validation) such that division is base on subjects
 # 
 #  Channels: Cz, FC6, F5, O2, AF8, CP6, AF7, CP5
-#  Time: 0-700ms (0-140)
+#  Time: 0-1300ms (0-260)
 #
 
 # load libraries
@@ -37,10 +37,10 @@ extract <- function(dataset) {
   result <- data.frame()
   for (fbi in fb.idx) {
     counter <- counter + 1
-    result <- rbind.data.frame(result, c(dataset[fbi:(fbi + 140), Cz], dataset[fbi:(fbi + 140), FC6],
-                                         dataset[fbi:(fbi + 140), F5], dataset[fbi:(fbi + 140), O2],
-                                         dataset[fbi:(fbi + 140), AF8], dataset[fbi:(fbi + 140), CP6],
-                                         dataset[fbi:(fbi + 140), AF7],dataset[fbi:(fbi + 140), CP5],
+    result <- rbind.data.frame(result, c(dataset[fbi:(fbi + 259), Cz], dataset[fbi:(fbi + 259), FC6],
+                                         dataset[fbi:(fbi + 259), F5], dataset[fbi:(fbi + 259), O2],
+                                         dataset[fbi:(fbi + 259), AF8], dataset[fbi:(fbi + 259), CP6],
+                                         dataset[fbi:(fbi + 259), AF7],dataset[fbi:(fbi + 259), CP5],
                                          dataset$Subject[fbi]))
     cat(counter, '/', length(fb.idx), '\r')
   }
@@ -103,7 +103,7 @@ colnames(test.orig) <- c(paste("A_", 1:(length(colnames(test.orig))), sep=""))
 
 # store the resulting dataset
 dataset = list('cvpairs'=cvpairs, 'test'=test.orig, 'train'=train.orig)
-folder = '8ch13sec'
+folder = '8ch1300ms'
 system(paste('mkdir ../../Data/', folder, sep=''))
 saveRDS(dataset, paste('../../Data/', folder, '/dataset.rds', sep=''))
 

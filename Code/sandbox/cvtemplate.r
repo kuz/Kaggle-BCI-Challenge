@@ -54,15 +54,16 @@ makeprediction <- function(classifier, validset) {
 # ------- In happy circumstances you should not look below this line ------- #
 
 # configure parallel foreach execution
-ncores <- floor(detectCores() * 0.3)
+ncores <- floor(detectCores() * 0.33)  # take 1/3 of available processors
 cl <- makeCluster(ncores)
 registerDoParallel(cl)
 
 # initalize parameter search grid
 results <- buildgrid(parameters)
 
-# log file name
+# log file name and outpur paramteres
 logfile = paste('logs/', format(Sys.time(), "%Y-%m-%d-%H%M%S"), '_', datafolder, '_', mlmethod, '.txt', sep='')
+options(width=200)
 
 # loop over all combinations of parameters
 timestart <- Sys.time()
@@ -134,7 +135,7 @@ cat('\n')
 sink()
 
 # choose best parameters
-best.idx <- which.max(results$score)
+best.idx <- which.max(results$outscore)
 p <- results[best.idx, ]
 
 # train a model on all training data with the best parameters

@@ -3,6 +3,7 @@
 # 
 #  Channels: Cz, FC6, F5, O2, AF8, CP6, AF7, CP5
 #  Time: 0-1300ms (0-260)
+#  PCA on top
 #
 
 # load libraries
@@ -24,7 +25,7 @@ test.path <- '../../Data/raw/test'
 test.files <- dir(test.path, pattern='Data.*\\.csv', full.names=T)
 test.tables <- lapply(test.files, fread)
 test.nrows <- sapply(test.tables, nrow)
-test.subjs <- as.numeric(substr(test.files, 28, 29))
+test.subjs <- as.numeric(substr(test.files, 27, 28))
 for (i in 1:length(test.tables)) {
   test.tables[[i]] = cbind.data.frame(test.tables[[i]], 'Subject'=rep(test.subjs[i], test.nrows[i]))
 }
@@ -60,14 +61,14 @@ topca <- function(train, test) {
   cumvar <- cumsum(pca.train$sdev / sum(pca.train$sdev))
   keep <- which(cumvar <= 0.99)
   pca.train <- pca.train$x[, keep]
-  pca.train <- cbind.data.frame(pca.train, mf.train)
+  pca.train <- cbind.data.frame(pca.train, 'Subject'=mf.train)
   
   mf.test.idx <- grep("Subject", colnames(test))
   mf.test <- test[, mf.test.idx]
   bf.test <- test[, -mf.test.idx]
   pca.test <- prcomp(bf.test, center=T, scale.=T)
   pca.test <- pca.test$x[, keep]
-  pca.test <- cbind.data.frame(pca.test, mf.test)
+  pca.test <- cbind.data.frame(pca.test, 'Subject'=mf.test)
   
   return(list('train'=pca.train, 'test'=pca.test))
 }
