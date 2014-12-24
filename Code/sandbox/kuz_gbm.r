@@ -1,33 +1,80 @@
 #
-# Template for hold-out-subjects cross-validation. You need to change 5 things here.
+# Template for hold-out-subjects cross-validation. You need to change 6 things here.
 #
 
-library('caret')
-library('pROC')
-source('../functions.r')
+# 1) SPECIFIFY PACKAGES TO USE DURING LEARNING HERE
+# this is needed because we need to pass them to each parallel cluster separately
+packages=c('pROC', 'caret')
 
-# 1) SPECIFY THE DATA FOLDER (WITH THE dataset.rds FILE PRODUCED BY ONE OF Code/preprocessing/extract_*.r SCRIPTS)
-datafolder <- 'cz2sec'
+library('foreach')
+library('doParallel')
+library('parallel')
+source('../functions.r')
+for (pkg in packages) {
+  library(pkg, character.only=T)
+}
+
+# On the server the global package directory is not writable
+# you might want to specify your local one here
+.libPaths('/home/kuzovkin/R/x86_64-unknown-linux-gnu-library/3.0')
+
+# 2) SPECIFY THE DATA FOLDER (WITH THE dataset.rds FILE PRODUCED BY ONE OF Code/preprocessing/extract_*.r SCRIPTS)
+datafolder <- '8ch13sec'
 dataset <- readRDS(paste('../../Data/', datafolder, '/dataset.rds', sep=''))
 
-# 2) ENLIST PARAMETERS HERE
+# 3) SPECIFY THE METHOD YOU USE (NEEDED JUST FOR RECORD)
+mlmethod <- 'gbm'
+
+# 4) ENLIST PARAMETERS HERE
 parameters <- list()
 parameters[['n.trees']] <- c(500, 800, 1200)
 parameters[['shrinkage']] <- c(0.01, 0.05, 0.1, 0.5)
 parameters[['interaction.depth']] <- c(1, 2, 3, 5, 10, 20, 30)
 
+# 5) THIS FUNCITON SHOULD RETURN classifier OBJECT
+# @param p: current set of parameters
+# @param trainingset: set to train model on
+buildmodel <- function(p, trainingset) {
+  gbmGrid <-  expand.grid(interaction.depth=p$interaction.depth, n.trees=p$n.trees, shrinkage=p$shrinkage)
+  trcontrol <- trainControl(method='none', classProbs=T)
+  classifier <- train(class ~., data=trainingset, 'gbm', trControl=trcontrol, tuneGrid = gbmGrid)
+  return(classifier)
+}
+
+# 6) THIS FUNCITON SHOULD RETURN VECTOR OF PREDICTED PROBABILITIES
+# @param classifier: classifier to use to predict
+# @param validset: set to validate results on
+makeprediction <- function(classifier, validset) {
+  predicted <- predict(classifier, newdata=validset, type='prob')$positive
+  return(predicted)
+}
+
+
+
+# ------- In happy circumstances you should not look below this line ------- #
+
+# configure parallel foreach execution
+ncores <- floor(detectCores() * 0.5)
+cl <- makeCluster(ncores)
+registerDoParallel(cl)
+
 # initalize parameter search grid
 results <- buildgrid(parameters)
 
+# log file name
+logfile = paste('logs/', format(Sys.time(), "%Y-%m-%d-%H%M%S"), '_', datafolder, '_', mlmethod, '.txt', sep='')
+
 # loop over all combinations of parameters
-for (r in 1:nrow(results)) {
-  
-  # display progress
-  cat('Set of parameters', r, 'out of', nrow(results), '\n')
-  cat('------------------------------\n')
+cvscores <- foreach(r = 1:nrow(results), .combine='rbind', .packages=packages) %dopar% {
   
   # read in current parameter set
   p <- results[r, ]
+  
+  # sink progress output to log file
+  sink(logfile, append=T)
+  Sys.sleep(runif(1))
+  cat('Set of parameters', r, 'out of', nrow(results), '\n')
+  sink()
   
   # here we store scores for current parameter set
   scores <- c()
@@ -35,32 +82,38 @@ for (r in 1:nrow(results)) {
   # loop over cross-validation (training, validation) pairs
   for (cvpair in dataset$cvpairs) {
     
-    # 3) PRODUCE AN OBJECT classifier HERE
-    gbmGrid <-  expand.grid(interaction.depth=p$interaction.depth, n.trees=p$n.trees, shrinkage=p$shrinkage)
-    trcontrol <- trainControl(method='none')
-    classifier <- train(class ~., data = cvpair$train, 'gbm', trControl=trcontrol, tuneGrid = gbmGrid)
+    # train a model
+    classifier <- buildmodel(p, cvpair$train)
     
-    # made a prediciton on a validation set
-    predicted.prob <- predict(classifier, newdata=cvpair$valid, type='prob')$positive
+    # make a prediciton on a validation set
+    predicted.prob <- makeprediction(classifier, cvpair$valid)
     
     # add record to results table
-    scores <- append(scores, as.numeric(roc(cvpair$valid$class, predicted.prob)$auc))
+    if (is.na(predicted.prob[1])) {
+      cat('WARNING: Was not able to predict probabilities. Deal with it.')
+      scores <- append(scores, -1)
+    } else {
+      scores <- append(scores, as.numeric(roc(cvpair$valid$class, predicted.prob)$auc))
+    }
   }
   
   # store the average score for this set of parameters
-  results[r, 'score'] <- mean(scores)
-  results[r, 'sd'] <- mean(sd)
+  data.frame('score'=mean(scores), 'sd'=sd(scores))
   
 }
 
-# 4) SPECIFY THE METHOD YOU USED FOR THE HISTORY
-mlmethod <- 'gbm'
+# combine results
+results$score <- cvscores$score
+results$sd <- cvscores$sd
+
+# stop parallel processing cluster
+stopCluster(cl)
 
 # store the results of this run
 resultlog <- cbind.data.frame('datafolder'=rep(datafolder, nrow(results)),
                               'mlmethod'=rep(mlmethod, nrow(results)),
                               results)
-sink('../../README.txt', append=T)
+sink(paste('../../Results/Summary/', datafolder, '.txt', sep=''), append=T)
 print(resultlog, right=F)
 cat('\n')
 sink()
@@ -69,15 +122,18 @@ sink()
 best.idx <- which.max(results$score)
 p <- results[best.idx, ]
 
-# 5) PRODUCE AN OBJECT classifier HERE (USE THE FULL TRAINING SET)
-gbmGrid <-  expand.grid(interaction.depth=p$interaction.depth, n.trees=p$n.trees, shrinkage=p$shrinkage)
-trcontrol <- trainControl(method='none')
-classifier <- train(class ~., data = dataset$train, 'gbm', trControl=trcontrol, tuneGrid = gbmGrid)
+# train a model on all training data with the best parameters
+classifier <- buildmodel(p, dataset$train)
 
 # predict on test dataset and store the file
-predicted   <- predict(classifier, newdata=dataset$test, type="prob")$positive
+predicted <- makeprediction(classifier, dataset$test)
 result <- data.frame(read.table('../../Results/SampleSubmission.csv', sep = ',', header = T))
 result$Prediction = predicted
 write.table(result, paste('../../Results/subX_', datafolder, '_', mlmethod, '.csv', sep=''), sep = ',', quote = F, row.names = F, col.names = T)
+
+
+
+
+
 
 
