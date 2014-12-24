@@ -54,7 +54,7 @@ makeprediction <- function(classifier, validset) {
 # ------- In happy circumstances you should not look below this line ------- #
 
 # configure parallel foreach execution
-ncores <- floor(detectCores() * 0.5)
+ncores <- floor(detectCores() * 0.3)
 cl <- makeCluster(ncores)
 registerDoParallel(cl)
 
