@@ -435,43 +435,61 @@
 15 cz2secmeta svmLinear 1e+03  TRUE 0.5427323 0.028940992
 16 cz2secmeta svmLinear 1e+03 FALSE 0.5328704 0.037187997
 17 cz2secmeta svmLinear 1e+04  TRUE 0.5298907 0.002764057
-18 cz2secmeta svmLinear 1e+04 FALSE 0.5275937 0.037710646  datafolder mlmethod n.trees shrinkage interaction.depth
-1 cz2secmeta gbm      10      0.01      1                
-2 cz2secmeta gbm      10      0.01      2                
-3 cz2secmeta gbm      10      0.05      1                
-4 cz2secmeta gbm      10      0.05      2                
-5 cz2secmeta gbm      20      0.01      1                
-6 cz2secmeta gbm      20      0.01      2                
-7 cz2secmeta gbm      20      0.05      1                
-8 cz2secmeta gbm      20      0.05      2                
+18 cz2secmeta svmLinear 1e+04 FALSE 0.5275937 0.037710646  
 
-  datafolder mlmethod n.trees shrinkage interaction.depth score     sd        
-1 cz2secmeta gbm      10      0.01      1                 0.5580963 0.05586041
-2 cz2secmeta gbm      10      0.01      2                 0.5431111 0.03799812
-3 cz2secmeta gbm      10      0.05      1                 0.5520806 0.04398182
-4 cz2secmeta gbm      10      0.05      2                 0.5578221 0.05768823
-5 cz2secmeta gbm      20      0.01      1                 0.5571407 0.05451391
-6 cz2secmeta gbm      20      0.01      2                 0.5560680 0.05775446
-7 cz2secmeta gbm      20      0.05      1                 0.5566810 0.02392922
-8 cz2secmeta gbm      20      0.05      2                 0.5720957 0.03543646
-
-  datafolder mlmethod n.trees shrinkage interaction.depth score     sd        
-1 cz2secmeta gbm      10      0.01      1                 0.5484583 0.06692815
-2 cz2secmeta gbm      10      0.01      2                 0.5519291 0.04812793
-3 cz2secmeta gbm      10      0.05      1                 0.5550826 0.02179013
-4 cz2secmeta gbm      10      0.05      2                 0.5531133 0.03442609
-5 cz2secmeta gbm      20      0.01      1                 0.5419739 0.03988923
-6 cz2secmeta gbm      20      0.01      2                 0.5480828 0.03668800
-7 cz2secmeta gbm      20      0.05      1                 0.5648452 0.02812470
-8 cz2secmeta gbm      20      0.05      2                 0.5566870 0.05282454
-
-  datafolder mlmethod n.trees shrinkage interaction.depth score     sd        
-1 cz2secmeta gbm      10      0.01      1                 0.5303014 0.04460783
-2 cz2secmeta gbm      10      0.01      2                 0.5304772 0.03358809
-3 cz2secmeta gbm      10      0.05      1                 0.5654836 0.05864108
-4 cz2secmeta gbm      10      0.05      2                 0.5429361 0.04320202
-5 cz2secmeta gbm      20      0.01      1                 0.5415800 0.03937665
-6 cz2secmeta gbm      20      0.01      2                 0.5424025 0.03813716
-7 cz2secmeta gbm      20      0.05      1                 0.5502017 0.04290595
-8 cz2secmeta gbm      20      0.05      2                 0.5741829 0.03049241
+   datafolder mlmethod C     scale degree score     sd         
+1  cz2secmeta svmPoly  1e-04  TRUE 2      0.5337086 0.027949042
+2  cz2secmeta svmPoly  1e-04  TRUE 3      0.5459654 0.045216280
+3  cz2secmeta svmPoly  1e-04  TRUE 4      0.5190057 0.022688304
+4  cz2secmeta svmPoly  1e-04 FALSE 2      0.5250903 0.009626041
+5  cz2secmeta svmPoly  1e-04 FALSE 3      0.5337263 0.018336894
+6  cz2secmeta svmPoly  1e-04 FALSE 4      0.5324145 0.022646747
+7  cz2secmeta svmPoly  1e-03  TRUE 2      0.5203503 0.010590395
+8  cz2secmeta svmPoly  1e-03  TRUE 3      0.5335766 0.032239918
+9  cz2secmeta svmPoly  1e-03  TRUE 4      0.5075624 0.017760313
+10 cz2secmeta svmPoly  1e-03 FALSE 2      0.5400651 0.029350338
+11 cz2secmeta svmPoly  1e-03 FALSE 3      0.5342396 0.017263692
+12 cz2secmeta svmPoly  1e-03 FALSE 4      0.5326821 0.022409070
+13 cz2secmeta svmPoly  1e-02  TRUE 2      0.5179199 0.008259750
+14 cz2secmeta svmPoly  1e-02  TRUE 3      0.5641183 0.019482054 *
+15 cz2secmeta svmPoly  1e-02  TRUE 4      0.5189482 0.017232262
+16 cz2secmeta svmPoly  1e-02 FALSE 2      0.5424945 0.031282501
+17 cz2secmeta svmPoly  1e-02 FALSE 3      0.5324522 0.026163110
+18 cz2secmeta svmPoly  1e-02 FALSE 4      0.5206742 0.030001247
+19 cz2secmeta svmPoly  1e-01  TRUE 2      0.5159421 0.029213061
+20 cz2secmeta svmPoly  1e-01  TRUE 3      0.5596385 0.020064247
+21 cz2secmeta svmPoly  1e-01  TRUE 4      0.5163996 0.006094277
+22 cz2secmeta svmPoly  1e-01 FALSE 2      0.5206599 0.013676795
+23 cz2secmeta svmPoly  1e-01 FALSE 3      0.5358357 0.020273879
+24 cz2secmeta svmPoly  1e-01 FALSE 4      0.5333950 0.021724411
+25 cz2secmeta svmPoly  1e+00  TRUE 2      0.5215464 0.027166228
+26 cz2secmeta svmPoly  1e+00  TRUE 3      0.5528893 0.023988028
+27 cz2secmeta svmPoly  1e+00  TRUE 4      0.5244070 0.015031811
+28 cz2secmeta svmPoly  1e+00 FALSE 2      0.5141340 0.017468544
+29 cz2secmeta svmPoly  1e+00 FALSE 3      0.5476850 0.020823742
+30 cz2secmeta svmPoly  1e+00 FALSE 4      0.5337296 0.021225876
+31 cz2secmeta svmPoly  1e+01  TRUE 2      0.5132489 0.018078315
+32 cz2secmeta svmPoly  1e+01  TRUE 3      0.5403813 0.021035548
+33 cz2secmeta svmPoly  1e+01  TRUE 4      0.5159242 0.013455713
+34 cz2secmeta svmPoly  1e+01 FALSE 2      0.5395025 0.026297450
+35 cz2secmeta svmPoly  1e+01 FALSE 3      0.5383750 0.021984739
+36 cz2secmeta svmPoly  1e+01 FALSE 4      0.4982949 0.040049699
+37 cz2secmeta svmPoly  1e+02  TRUE 2      0.5197346 0.010822883
+38 cz2secmeta svmPoly  1e+02  TRUE 3      0.5369463 0.018813360
+39 cz2secmeta svmPoly  1e+02  TRUE 4      0.5342514 0.014896963
+40 cz2secmeta svmPoly  1e+02 FALSE 2      0.5375147 0.021228246
+41 cz2secmeta svmPoly  1e+02 FALSE 3      0.5360692 0.023165758
+42 cz2secmeta svmPoly  1e+02 FALSE 4      0.5328024 0.022235522
+43 cz2secmeta svmPoly  1e+03  TRUE 2      0.5144264 0.024853207
+44 cz2secmeta svmPoly  1e+03  TRUE 3      0.5354231 0.014352496
+45 cz2secmeta svmPoly  1e+03  TRUE 4      0.5288790 0.014118353
+46 cz2secmeta svmPoly  1e+03 FALSE 2      0.5256923 0.014976458
+47 cz2secmeta svmPoly  1e+03 FALSE 3      0.5427007 0.020877365
+48 cz2secmeta svmPoly  1e+03 FALSE 4      0.5256970 0.033067422
+49 cz2secmeta svmPoly  1e+04  TRUE 2      0.5344007 0.018904787
+50 cz2secmeta svmPoly  1e+04  TRUE 3      0.5314613 0.021644048
+51 cz2secmeta svmPoly  1e+04  TRUE 4      0.5320877 0.025096808
+52 cz2secmeta svmPoly  1e+04 FALSE 2      0.5383182 0.028445489
+53 cz2secmeta svmPoly  1e+04 FALSE 3      0.5308585 0.027000710
+54 cz2secmeta svmPoly  1e+04 FALSE 4      0.5328597 0.022254881
 

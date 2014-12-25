@@ -19,7 +19,7 @@ for (pkg in packages) {
 .libPaths('/home/kuzovkin/R/x86_64-unknown-linux-gnu-library/3.0')
 
 # 2) SPECIFY THE DATA FOLDER (WITH THE dataset.rds FILE PRODUCED BY ONE OF Code/preprocessing/extract_*.r SCRIPTS)
-datafolder <- '8ch13sec'
+datafolder <- '8ch1300ms'
 dataset <- readRDS(paste('../../Data/', datafolder, '/dataset.rds', sep=''))
 
 # 3) SPECIFY THE METHOD YOU USE (NEEDED JUST FOR RECORD)
@@ -27,9 +27,9 @@ mlmethod <- 'gbm'
 
 # 4) ENLIST PARAMETERS HERE
 parameters <- list()
-parameters[['n.trees']] <- c(500, 800, 1200)
-parameters[['shrinkage']] <- c(0.01, 0.05, 0.1, 0.5)
-parameters[['interaction.depth']] <- c(1, 2, 3, 5, 10, 20, 30)
+parameters[['n.trees']] <- c(300, 500, 700)
+parameters[['shrinkage']] <- c(0.01, 0.05)
+parameters[['interaction.depth']] <- c(1, 10, 20)
 
 # 5) THIS FUNCITON SHOULD RETURN classifier OBJECT
 # @param p: current set of parameters
@@ -61,10 +61,12 @@ registerDoParallel(cl)
 # initalize parameter search grid
 results <- buildgrid(parameters)
 
-# log file name
+# log file name and outpur paramteres
 logfile = paste('logs/', format(Sys.time(), "%Y-%m-%d-%H%M%S"), '_', datafolder, '_', mlmethod, '.txt', sep='')
+options(width=200)
 
 # loop over all combinations of parameters
+timestart <- Sys.time()
 cvscores <- foreach(r = 1:nrow(results), .combine='rbind', .packages=packages) %dopar% {
   
   # read in current parameter set
@@ -73,11 +75,12 @@ cvscores <- foreach(r = 1:nrow(results), .combine='rbind', .packages=packages) %
   # sink progress output to log file
   sink(logfile, append=T)
   Sys.sleep(runif(1))
-  cat('Set of parameters', r, 'out of', nrow(results), '\n')
+  cat('Starting set of parameters', r, 'out of', nrow(results), '\n')
   sink()
   
   # here we store scores for current parameter set
-  scores <- c()
+  scores.out <- c()
+  scores.in <- c()
   
   # loop over cross-validation (training, validation) pairs
   for (cvpair in dataset$cvpairs) {
@@ -85,25 +88,38 @@ cvscores <- foreach(r = 1:nrow(results), .combine='rbind', .packages=packages) %
     # train a model
     classifier <- buildmodel(p, cvpair$train)
     
-    # make a prediciton on a validation set
-    predicted.prob <- makeprediction(classifier, cvpair$valid)
+    # make a prediciton on a validation and training sets
+    predicted.prob.out <- makeprediction(classifier, cvpair$valid)
+    predicted.prob.in <-  makeprediction(classifier, cvpair$train)
     
     # add record to results table
-    if (is.na(predicted.prob[1])) {
+    if (is.na(predicted.prob.out[1])) {
       cat('WARNING: Was not able to predict probabilities. Deal with it.')
-      scores <- append(scores, -1)
+      scores.out <- append(scores.out, -1)
+      scores.in <- append(scores.in, -1)
     } else {
-      scores <- append(scores, as.numeric(roc(cvpair$valid$class, predicted.prob)$auc))
+      scores.out <- append(scores.out, as.numeric(roc(cvpair$valid$class, predicted.prob.out)$auc))
+      scores.in  <- append(scores.in,  as.numeric(roc(cvpair$train$class, predicted.prob.in)$auc))
     }
   }
   
+  # log that current set of parameters is complete
+  sink(logfile, append=T)
+  Sys.sleep(runif(1))
+  cat('Done on set of parameters', r, 'out of', nrow(results), '\n')
+  sink()
+  
   # store the average score for this set of parameters
-  data.frame('score'=mean(scores), 'sd'=sd(scores))
+  data.frame('inscore'=mean(scores.in), 'outscore'=mean(scores.out), 'sd'=sd(scores.out))
   
 }
 
+# Tell how long the whole process took
+print(Sys.time() - timestart)
+
 # combine results
-results$score <- cvscores$score
+results$inscore <- cvscores$inscore
+results$outscore <- cvscores$outscore
 results$sd <- cvscores$sd
 
 # stop parallel processing cluster
@@ -119,7 +135,7 @@ cat('\n')
 sink()
 
 # choose best parameters
-best.idx <- which.max(results$score)
+best.idx <- which.max(results$outscore)
 p <- results[best.idx, ]
 
 # train a model on all training data with the best parameters

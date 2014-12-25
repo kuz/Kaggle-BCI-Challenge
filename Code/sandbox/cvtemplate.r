@@ -110,7 +110,7 @@ cvscores <- foreach(r = 1:nrow(results), .combine='rbind', .packages=packages) %
   sink()
   
   # store the average score for this set of parameters
-  data.frame('inscore'=mean(scores.in), 'outscore'=mean(scores.out), 'sd'=sd(scores))
+  data.frame('inscore'=mean(scores.in), 'outscore'=mean(scores.out), 'sd'=sd(scores.out))
 
 }
 
