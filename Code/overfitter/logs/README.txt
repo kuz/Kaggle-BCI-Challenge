@@ -1,0 +1,1 @@
+Logs are needed to store output from parallel processes (it is not possible to output them to usual R console)

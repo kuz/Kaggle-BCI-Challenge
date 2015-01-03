@@ -1,0 +1,1 @@
+In this folder Overfitter stores all CV results for all sets of parameters for all algorihtms it has tried with every particular dataset. Each dataset is represented by one file.
