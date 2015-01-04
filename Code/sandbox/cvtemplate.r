@@ -75,7 +75,7 @@ cvscores <- foreach(r = 1:nrow(results), .combine='rbind', .packages=packages) %
   # sink progress output to log file
   sink(logfile, append=T)
   Sys.sleep(runif(1))
-  cat('Starting set of parameters', r, 'out of', nrow(results), '\n')
+  cat(format(Sys.time(), "%Y-%m-%d %H:%M:%S"), '  Starting set of parameters', r, 'out of', nrow(results), '\n')
   sink()
   
   # here we store scores for current parameter set
@@ -106,7 +106,7 @@ cvscores <- foreach(r = 1:nrow(results), .combine='rbind', .packages=packages) %
   # log that current set of parameters is complete
   sink(logfile, append=T)
   Sys.sleep(runif(1))
-  cat('Done on set of parameters', r, 'out of', nrow(results), '\n')
+  cat(format(Sys.time(), "%Y-%m-%d %H:%M:%S"), '  Done on set of parameters', r, 'out of', nrow(results), '\n')
   sink()
   
   # store the average score for this set of parameters
