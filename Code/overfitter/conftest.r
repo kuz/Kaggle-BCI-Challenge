@@ -4,7 +4,7 @@
 #
 
 # configuration to test
-cf = './configuration/conf_bayesglm.r'
+#cf = './configuration/conf_bagFDA.r'
 
 
 
@@ -20,6 +20,8 @@ options(width=200)
 # load dataset 
 datafolder <- 'fft_cz1300ms'
 dataset <- readRDS(paste('../../Data/', datafolder, '/dataset.rds', sep=''))
+nf <- ncol(dataset$train)
+ns <- nrow(dataset$train)
 
 # load configuration  
 source(cf)
@@ -31,6 +33,9 @@ p <- results[1, ]
 # here we store scores for current parameter set
 scores.out <- c()
 scores.in <- c()
+
+# measure time
+timestart <- Sys.time()
 
 # loop over cross-validation (training, validation) pairs
 for (cvpair in dataset$cvpairs) {
@@ -53,7 +58,10 @@ for (cvpair in dataset$cvpairs) {
   }
 }
 
+# show final results
+cat('----------------------------------------------------------------------------------------------------------------------------------------\nIf you see in-sample and out-of-sample scores below and no warnings nor errors, then', cf, 'should work fine\n')
 print(scores.in)
 print(scores.out)
-
-cat('------------------------------------------------------------------------------------------\nIf you see this line and no warnings then most probably your configuration works correctly\n------------------------------------------------------------------------------------------\n')
+cat('----------------------------------------------------------------------------------------------------------------------------------------\n')
+print(Sys.time() - timestart)
+cat('----------------------------------------------------------------------------------------------------------------------------------------\n')

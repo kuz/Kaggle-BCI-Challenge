@@ -14,26 +14,38 @@ source('functions.r')
 options(width=200)
 
 # load dataset 
-datafolder <- 'fft_cz1300ms'
+datafolder <- 'debugset'
 dataset <- readRDS(paste('../../Data/', datafolder, '/dataset.rds', sep=''))
+nf <- ncol(dataset$train)
+ns <- nrow(dataset$train)
 
 # list configurations
-conf.files <- dir('./configuration', pattern='conf_.*\\.r', full.names=T)
+conf.files <- dir('./configurations/run', pattern='$conf_.*\\.r', full.names=T)
 
 # here we store all data about all models
 models <- list()
 
 # for each configuration
 for (cf in conf.files) {
+
+  # measure time
+  timestart <- Sys.time()
   
   # load configuration  
   source(cf)
+  
+  # some log messages
+  cat('---------------------------------------------------\n')
+  cat(format(Sys.time(), "%Y-%m-%d %H:%M:%S"), 'started with', mlmethod, '\n')
 
   # choose a model using cross-validation
   source('worker.r')
 
   # make predictions on test data using the best set of parameters
   models[[mlmethod]] <- list('p'=p, 'classifier'=classifier, 'predicted'=predicted)
+  
+  # output summary
+  cat(format(Sys.time(), "%Y-%m-%d %H:%M:%S"), mlmethod, 'took', Sys.time() - timestart,'\n')
   
 }
 

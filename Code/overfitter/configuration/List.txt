@@ -1,7 +1,0 @@
-Method                                                   caret Name                    Status
-------                                                   ----------                    ------
-Bayesian Generalized Linear Model                        bayesglm                      conf_bayesglm.r
-Stochastic Gradient Boosting                             gbm                           conf_gbm.r
-Penalized Multinomial Regression                         multinom                      conf_multinom.r
-Random Forest                                            rf                            conf_rf.r
-Regularized Random Forest                                rrf                           conf_rrf.r
