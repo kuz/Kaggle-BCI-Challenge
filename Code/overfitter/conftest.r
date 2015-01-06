@@ -39,23 +39,23 @@ timestart <- Sys.time()
 
 # loop over cross-validation (training, validation) pairs
 for (cvpair in dataset$cvpairs) {
-  
-  # train a model
-  classifier <- buildmodel(p, cvpair$train)
-  
-  # make a prediciton on a validation and training sets
-  predicted.prob.out <- makeprediction(classifier, cvpair$valid)
-  predicted.prob.in <-  makeprediction(classifier, cvpair$train)
-  
-  # add record to results table
-  if (is.na(predicted.prob.out[1])) {
-    cat('WARNING: Was not able to predict probabilities. Deal with it. (', mlmethod, ')')
-    scores.out <- append(scores.out, -1)
-    scores.in <- append(scores.in, -1)
-  } else {
-    scores.out <- append(scores.out, as.numeric(roc(cvpair$valid$class, predicted.prob.out)$auc))
-    scores.in  <- append(scores.in,  as.numeric(roc(cvpair$train$class, predicted.prob.in)$auc))
-  }
+    
+    # train a model
+    classifier <- buildmodel(p, cvpair$train)
+    
+    # make a prediciton on a validation and training sets
+    predicted.prob.out <- makeprediction(classifier, cvpair$valid)
+    predicted.prob.in <-  makeprediction(classifier, cvpair$train)
+    
+    # add record to results table
+    if (is.na(predicted.prob.out[1])) {
+        cat('WARNING: Was not able to predict probabilities. Deal with it. (', mlmethod, ')')
+        scores.out <- append(scores.out, -1)
+        scores.in <- append(scores.in, -1)
+    } else {
+        scores.out <- append(scores.out, as.numeric(roc(cvpair$valid$class, predicted.prob.out)$auc))
+        scores.in  <- append(scores.in,  as.numeric(roc(cvpair$train$class, predicted.prob.in)$auc))
+    }
 }
 
 # show final results

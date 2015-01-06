@@ -14,39 +14,39 @@ source('functions.r')
 options(width=200)
 
 # load dataset 
-datafolder <- 'debugset'
+datafolder <- 'pca8ch1300ms16cv'
 dataset <- readRDS(paste('../../Data/', datafolder, '/dataset.rds', sep=''))
 nf <- ncol(dataset$train)
 ns <- nrow(dataset$train)
 
 # list configurations
-conf.files <- dir('./configurations/run', pattern='$conf_.*\\.r', full.names=T)
+conf.files <- dir('./configurations/run', pattern='conf_.*\\.r', full.names=T)
 
 # here we store all data about all models
 models <- list()
 
 # for each configuration
 for (cf in conf.files) {
-
-  # measure time
-  timestart <- Sys.time()
-  
-  # load configuration  
-  source(cf)
-  
-  # some log messages
-  cat('---------------------------------------------------\n')
-  cat(format(Sys.time(), "%Y-%m-%d %H:%M:%S"), 'started with', mlmethod, '\n')
-
-  # choose a model using cross-validation
-  source('worker.r')
-
-  # make predictions on test data using the best set of parameters
-  models[[mlmethod]] <- list('p'=p, 'classifier'=classifier, 'predicted'=predicted)
-  
-  # output summary
-  cat(format(Sys.time(), "%Y-%m-%d %H:%M:%S"), mlmethod, 'took', Sys.time() - timestart,'\n')
-  
+    
+    # measure time
+    timestart <- Sys.time()
+    
+    # load configuration  
+    source(cf)
+    
+    # some log messages
+    cat('---------------------------------------------------\n')
+    cat(format(Sys.time(), "%Y-%m-%d %H:%M:%S"), 'started with', mlmethod, '\n')
+    
+    # choose a model using cross-validation
+    source('worker.r')
+    
+    # make predictions on test data using the best set of parameters
+    models[[mlmethod]] <- list('p'=p, 'classifier'=classifier, 'predicted'=predicted)
+    
+    # output summary
+    cat(format(Sys.time(), "%Y-%m-%d %H:%M:%S"), mlmethod, 'took', Sys.time() - timestart,'\n')
+    
 }
 
 # keep only models with out-of-sample score larger than 90% of maximal
@@ -64,19 +64,19 @@ print(correlations)
 # pick N least correlated models
 bestmodel <- names(which.max(scores))
 picked <- c(bestmodel)
-for (i in 1:2) {
-  
-  # pick a model which has least total correlation with already selected ones
-  nrows <- dim(as.data.frame(correlations[picked, !colnames(correlations) %in% picked]))[2]
-  if (nrows > 1) {
-    unpicked <- colMeans(correlations[picked, !colnames(correlations) %in% picked])
-  } else {
-    unpicked <- correlations[picked, !colnames(correlations) %in% picked]
-  }
-  
-  # and add it to the list
-  picked <- append(picked, names(which.min(unpicked)))
-  
+for (i in 1:3) {
+    
+    # pick a model which has least total correlation with already selected ones
+    nrows <- dim(as.data.frame(correlations[picked, !colnames(correlations) %in% picked]))[2]
+    if (nrows > 1) {
+        unpicked <- colMeans(correlations[picked, !colnames(correlations) %in% picked])
+    } else {
+        unpicked <- correlations[picked, !colnames(correlations) %in% picked]
+    }
+    
+    # and add it to the list
+    picked <- append(picked, names(which.min(unpicked)))
+    
 }
 
 # it might happen that same model is selected twice
