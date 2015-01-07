@@ -50,7 +50,7 @@ newfeatures <- as.matrix(features) %*% t(autoencoder$W[[1]]) + autoencoder$b[[1]
 newdataset <- cbind.data.frame(newfeatures, labels)
 
 # reconstruct old features from new for a sanity check
-recfeatures <- as.matrix(newfeatures) %*% t(autoencoder$W[[2]]) + autoencoder$b[[1]]
+recfeatures <- as.matrix(newfeatures) %*% t(autoencoder$W[[2]]) + autoencoder$b[[2]]
 recdataset <- cbind.data.frame(recfeatures, labels)
 
 # seems to be same up to scaling
