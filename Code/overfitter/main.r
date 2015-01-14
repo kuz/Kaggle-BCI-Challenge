@@ -50,6 +50,7 @@ for (cf in conf.files) {
 }
 
 # keep only models with out-of-sample score larger than 90% of maximal
+allmodels <- models
 scores <- sapply(models, function(x) { x$p$outscore })
 print(scores)
 threshold <- max(scores) * 0.9
@@ -64,7 +65,7 @@ print(correlations)
 # pick N least correlated models
 bestmodel <- names(which.max(scores))
 picked <- c(bestmodel)
-for (i in 1:3) {
+for (i in 1:2) {
     
     # pick a model which has least total correlation with already selected ones
     nrows <- dim(as.data.frame(correlations[picked, !colnames(correlations) %in% picked]))[2]
