@@ -19,26 +19,25 @@ for (pkg in packages) {
 .libPaths('/home/kuzovkin/R/x86_64-unknown-linux-gnu-library/3.0')
 
 # 2) SPECIFY THE DATA FOLDER (WITH THE dataset.rds FILE PRODUCED BY ONE OF Code/preprocessing/extract_*.r SCRIPTS)
-datafolder <- 'eye8ch1300ms80pca'
+datafolder <- '8ch1300ms16cv80pca'
 dataset <- readRDS(paste('../../Data/', datafolder, '/dataset.rds', sep=''))
 
 # 3) SPECIFY THE METHOD YOU USE (NEEDED JUST FOR RECORD)
-mlmethod <- 'gbm'
+mlmethod <- 'multinom'
 
 # 4) ENLIST PARAMETERS HERE
 parameters <- list()
-parameters[['n.trees']] <- c(500)
-parameters[['shrinkage']] <- c(0.05)
-parameters[['interaction.depth']] <- c(1)
+parameters[['maxit']] <- c(100)
+parameters[['decay']] <- c(10)
 
 # 5) THIS FUNCITON SHOULD RETURN classifier OBJECT
 # @param p: current set of parameters
 # @param trainingset: set to train model on
 buildmodel <- function(p, trainingset) {
-    gbmGrid <-  expand.grid(interaction.depth=p$interaction.depth, n.trees=p$n.trees, shrinkage=p$shrinkage)
-    trcontrol <- trainControl(method='none', classProbs=T)
-    classifier <- train(class ~., data=trainingset, 'gbm', trControl=trcontrol, tuneGrid = gbmGrid)
-    return(classifier)
+    tunegrid <- data.frame(decay=p$decay)
+    trcontrol <- trainControl(method='none')
+    classifier <- train(class ~., data=trainingset, 'multinom', trControl=trcontrol, tuneGrid=tunegrid,
+                        maxit=p$maxit, MaxNWts=10000)
 }
 
 # 6) THIS FUNCITON SHOULD RETURN VECTOR OF PREDICTED PROBABILITIES
@@ -57,7 +56,7 @@ makeprediction <- function(classifier, validset) {
 timestart <- Sys.time()
 
 # configure parallel foreach execution
-ncores <- floor(detectCores() * 0.5)  # take 1/3 of available processors
+ncores <- floor(detectCores() * 0.5)  # take 1/2 of available processors
 cl <- makeCluster(ncores)
 registerDoParallel(cl)
 
@@ -103,6 +102,13 @@ print(Sys.time() - timestart)
 print(scores)
 print(colMeans(scores))
 
+# produce result
+classifier <- buildmodel(p, dataset$train)
+predicted   <- predict(classifier, newdata=dataset$test, type="prob")$positive
+result <- data.frame(read.table('../../Results/SampleSubmission.csv', sep = ',', header = T))
+result$Prediction = predicted
+write.table(result, paste('../../Results/subX_', datafolder, '_', mlmethod, '.csv', sep=''),
+            sep=',', quote=F, row.names=F, col.names=T)
 
 
 

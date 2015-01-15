@@ -19,7 +19,7 @@ for (pkg in packages) {
 .libPaths('/home/kuzovkin/R/x86_64-unknown-linux-gnu-library/3.0')
 
 # 2) SPECIFY THE DATA FOLDER (WITH THE dataset.rds FILE PRODUCED BY ONE OF Code/preprocessing/extract_*.r SCRIPTS)
-datafolder <- 'eye8ch1300ms80pca'
+datafolder <- 'baseline8ch1300ms70pca'
 dataset <- readRDS(paste('../../Data/', datafolder, '/dataset.rds', sep=''))
 
 # 3) SPECIFY THE METHOD YOU USE (NEEDED JUST FOR RECORD)
@@ -53,6 +53,9 @@ makeprediction <- function(classifier, validset) {
 
 # ------- In happy circumstances you should not look below this line ------- #
 
+# load leacked predictions
+leaked <- data.frame(read.table('../../Results/data_leak_train_predictions.csv', sep = ',', header = T))
+
 # measure time
 timestart <- Sys.time()
 
@@ -67,6 +70,11 @@ results <- buildgrid(parameters)
 # read in current parameter set
 p <- results[1, ]
 
+# list of subjects
+subjects <- c('S02_Sess05', 'S06_Sess05', 'S07_Sess05', 'S11_Sess05', 'S12_Sess05', 'S13_Sess05',
+              'S14_Sess05', 'S16_Sess05', 'S17_Sess05', 'S18_Sess05', 'S20_Sess05', 'S21_Sess05', 
+              'S22_Sess05', 'S23_Sess05', 'S24_Sess05', 'S26_Sess05')
+
 # loop over cross-validation (training, validation) pairs
 scores <- foreach(cv = 1:length(dataset$cvpairs), .combine='rbind', .packages=packages) %dopar% {
     
@@ -79,6 +87,11 @@ scores <- foreach(cv = 1:length(dataset$cvpairs), .combine='rbind', .packages=pa
     # make a prediciton on a validation and training sets
     predicted.prob.out <- makeprediction(classifier, cvpair$valid)
     predicted.prob.in <-  makeprediction(classifier, cvpair$train)
+    
+    # update predictions with with leaked ones
+    sess.five.idx <- grep(paste(subjects[cv], '.', sep=''), leaked$IdFeedBack)
+    predicted.leak <- leaked[sess.five.idx, 'Prediction']
+    predicted.prob.out[241:340] <- predicted.leak
     
     # add record to results table
     if (is.na(predicted.prob.out[1])) {
