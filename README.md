@@ -4,7 +4,8 @@ Here are listed the major steps we should take and the results of those steps as
 
 1. Figure out good features
 ---------------------------
-[Summary](Results/Summary/one_run_gbm.txt) using same model on all dataset: GBM(500, 0.05, 1)
+[Different datasets on GBM](Results/Summary/one_run_gbm.txt) using same model on all dataset: GBM(500, 0.05, 1)
+[Different datasets on Multinom](Results/Summary/one_run_multinom.txt) using same model on all dataset: Multinom(100, 10)
 
 
 2. Find the best classifier

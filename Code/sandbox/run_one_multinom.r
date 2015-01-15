@@ -103,12 +103,12 @@ print(scores)
 print(colMeans(scores))
 
 # produce result
-classifier <- buildmodel(p, dataset$train)
-predicted   <- predict(classifier, newdata=dataset$test, type="prob")$positive
-result <- data.frame(read.table('../../Results/SampleSubmission.csv', sep = ',', header = T))
-result$Prediction = predicted
-write.table(result, paste('../../Results/subX_', datafolder, '_', mlmethod, '.csv', sep=''),
-            sep=',', quote=F, row.names=F, col.names=T)
+#classifier <- buildmodel(p, dataset$train)
+#predicted   <- predict(classifier, newdata=dataset$test, type="prob")$positive
+#result <- data.frame(read.table('../../Results/SampleSubmission.csv', sep = ',', header = T))
+#result$Prediction = predicted
+#write.table(result, paste('../../Results/subX_', datafolder, '_', mlmethod, '.csv', sep=''),
+#            sep=',', quote=F, row.names=F, col.names=T)
 
 
 
