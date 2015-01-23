@@ -7,6 +7,7 @@ library(reshape2)
 library(xtable)
 library(ggplot2)
 library(reshape2)
+library(signal)
 
 
 setwd("/Users/annaleontjeva/Desktop/My_files/Kaggle-BCI-Challenge/Data")
