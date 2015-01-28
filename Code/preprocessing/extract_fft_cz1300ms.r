@@ -108,7 +108,7 @@ extractpair <- function(vidx) {
 }
 
 # extract cv pairs
-subjects <- sample(unique(train.orig$Subject), 16)
+subjects <- sort(as.numeric(unique(train.orig$Subject)))
 cvpairs <- list()
 cvpairs[[1]] <- extractpair(c(1:4))
 cvpairs[[2]] <- extractpair(c(5:8))

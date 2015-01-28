@@ -146,7 +146,7 @@ extractpair <- function(vidx) {
 }
 
 # extract cv pairs
-subjects <- sample(unique(train.orig$Subject), 16)
+subjects <- sort(as.numeric(unique(train.orig$Subject)))
 cvpairs <- list()
 for (i in 1:16) {
     cvpairs[[i]] <- extractpair(c(i))
