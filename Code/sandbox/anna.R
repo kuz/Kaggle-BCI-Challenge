@@ -7,11 +7,12 @@ library(reshape2)
 library(xtable)
 library(ggplot2)
 library(reshape2)
+library(signal)
 
 
 setwd("/Users/annaleontjeva/Desktop/My_files/Kaggle-BCI-Challenge/Data")
 #---Data---#
-Data_S02_Sess01 <- fread("train/Data_S02_Sess01.csv")
+Data_S02_Sess01 <- fread("raw/train/Data_S02_Sess01.csv")
 train <- as.data.frame(Data_S02_Sess01)
 train$Prediction <- ifelse(train$FeedBackEvent==1,TrainLabels$Prediction,0)
 
@@ -80,7 +81,7 @@ hwf <- HoltWinters(ts_AF3_ts)
 Data_S06_Sess04 <- fread("train/Data_S06_Sess04.csv")
 test <- as.data.frame(Data_S06_Sess04)
 
-TrainLabels <- fread("train/TrainLabels.csv")
+TrainLabels <- fread("TrainLabels.csv")
 TrainLabels <- as.data.frame(TrainLabels)
 TrainLabelsSubj <- TrainLabels[grep("S02_Sess01", TrainLabels$IdFeedBack, value=FALSE,fixed=FALSE),]
 TestLabelsSubj <- TrainLabels[grep("S06_Sess04", TrainLabels$IdFeedBack, value=FALSE,fixed=FALSE),]
@@ -310,3 +311,94 @@ melt_average <- rbind(melt_positive_average, melt_negative_average)
   facet_wrap(~variable)
  dev.off()
 }
+
+#------kmeans-----#
+dt <- readRDS('fft_cz1300ms/dataset.rds')
+#list of lists of lists
+head(dt$train)
+
+
+#sess <- dt$train[,c(263)] 
+#subj <- dt$train[,c(264)]
+signals <- dt$train[,c(1:100)]
+
+
+kmeans_fit <- kmeans(signals, 5)
+
+table(session=sess, cluster=kmeans_fit$cluster)
+table(subjects=subj, cluster=kmeans_fit$cluster)
+
+dist(kmeans_sub_2$centers)
+sqrt(kmeans_sub_2$betweenss)
+sqrt(kmeans_sub_2$withinss)
+
+library(cluster) 
+clusplot(signals, kmeans_fit$cluster, color=TRUE, shade=TRUE, 
+         labels=0, lines=0)
+
+mean_per_subject <- aggregate(data=dt$train[,c(1:260,264)], .~Subject, mean)
+dist(mean_per_subject[,-1])
+
+#-------#
+dt_all <- readRDS("cz2secmeta/dataset.rds")
+
+dt_positive <- subset(dt_all$train, class=='positive')[,1:260]
+dt_negative <- subset(dt_all$train, class=='negative')[,1:260]
+
+dt_tmp <- unlist(dt_all$train[,1:260])
+dt_cut <- cbind.data.frame(original=dt_tmp, bins=cut2(dt_tmp, m=14144))
+
+discretize <- function(data){
+ dt_binned <- data
+ for(i in 1:260){
+   print(i)
+   dt_binned[,i] <- dt_cut$bins[match(data[,i], dt_cut$original)]
+ }
+ dt_binned_chr <- apply(dt_binned, 2, as.character)
+ return(dt_binned_chr)
+}
+
+
+dt_positive <- discretize(data=dt_positive) 
+dt_negative <- discretize(data=dt_negative) 
+
+hmm_discnp_pos <- hmm(dt_positive, K=5, verb=TRUE)
+
+round(hmm_discnp_pos$tpm,3)
+round(hmm_discnp_pos$ispd,3)
+
+hmm_discnp_neg <- hmm(dt_negative, K=5, verb=TRUE)
+round(hmm_discnp_neg$Rho, 3)
+round(hmm_discnp_neg$tpm, 3)
+round(hmm_discnp_neg$ispd, 3)
+cbind(round(hmm_discnp_pos$Rho,3),round(hmm_discnp_neg$Rho, 3))
+
+logLikHmm(dt_positive[3,],hmm_discnp_pos)
+logLikHmm(dt_positive[3,],hmm_discnp_neg)
+
+logLikHmm(dt_negative[3,],hmm_discnp_pos)
+logLikHmm(dt_negative[3,],hmm_discnp_neg)
+
+difference <- function(sequences){
+  logLikHmm(sequences,hmm_discnp_pos)-logLikHmm(sequences,hmm_discnp_neg)
+}
+difference(dt_positive[15,]) 
+difference(dt_negative[11,]) 
+
+results_negative <- apply(dt_negative,1,difference)
+results_positive <- apply(dt_positive,1,difference)
+table(sign(results_negative))
+table(sign(results_positive))
+
+results <- rbind.data.frame(cbind.data.frame(dif=results_negative, class='neg'),
+                            cbind.data.frame(dif=results_positive, class='pos'))
+
+ggplot(results, aes(x=dif, color=class))+geom_density()+theme_bw()
+
+#letters <- levels(dt_binned[,1])
+#states <- c('one','two','three')
+#initial <- rep(1/length(states),length(states))
+#emission <- matrix(1/length(states), nrow = length(states), ncol=length(letters))
+#transition <- matrix(1/length(states), nrow=length(states),ncol=length(states))
+#hmm_model <- initHMM(states, letters, initial,transition,emission)
+#hmm_model_bw <- baumWelch(hmm_model, dt_binned_chr[1:1000,], maxIterations = 100)

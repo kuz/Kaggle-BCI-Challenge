@@ -24,20 +24,20 @@
 %
 % Test data
 % -----------------------
-% 'S01', 686010 - 5, []
-% 'S03', 750010 - 5, []
-% 'S04', 709010 - 5, []
-% 'S05', 754410 - 5, []
-% 'S08', 773410 - 5, []
-% 'S09', 775810 - 5, []
-% 'S10', 788810 - 5, []
-% 'S15', 833810 - 5, []
-% 'S19', 892810 - 5, []
-% 'S25', 949210 - 5, []
+% 'S01', 686010 - 5, [22]
+% 'S03', 750010 - 5, [38]
+% 'S04', 709010 - 5, [31]
+% 'S05', 754410 - 5, [29]
+% 'S08', 773410 - 5, [29]
+% 'S09', 775810 - 5, [36]
+% 'S10', 788810 - 5, [50]
+% 'S15', 833810 - 5, [42]
+% 'S19', 892810 - 5, [44]
+% 'S25', 949210 - 5, [35]
 %
 
-subject = 'S01';
-datasize = 686010;
+subject = 'S25';
+datasize = 949210 - 5;
 dataset = 'test';
 
 
@@ -102,7 +102,7 @@ preprocessed = ft_preprocessing(cfg, raw);
 
 % reject the components and store the update data
 cfg = [];
-cfg.component = [];  % to be removed component(s)
+cfg.component = [35];  % to be removed component(s)
 data = ft_rejectcomponent(cfg, comp, preprocessed);
 
 
