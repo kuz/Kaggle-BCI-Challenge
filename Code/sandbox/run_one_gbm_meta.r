@@ -19,7 +19,7 @@ for (pkg in packages) {
 .libPaths('/home/kuzovkin/R/x86_64-unknown-linux-gnu-library/3.0')
 
 # 2) SPECIFY THE DATA FOLDER (WITH THE dataset.rds FILE PRODUCED BY ONE OF Code/preprocessing/extract_*.r SCRIPTS)
-datafolder <- 'genstats8ch1300ms'
+datafolder <- 'eye8ch1300ms80pca'
 dataset <- readRDS(paste('../../Data/', datafolder, '/dataset.rds', sep=''))
 
 # 3) SPECIFY THE METHOD YOU USE (NEEDED JUST FOR RECORD)
@@ -80,6 +80,23 @@ scores <- foreach(cv = 1:length(dataset$cvpairs), .combine='rbind', .packages=pa
     predicted.prob.out <- makeprediction(classifier, cvpair$valid)
     predicted.prob.in <-  makeprediction(classifier, cvpair$train)
     
+    # identify current subject rows in the training set
+    subjectlist <- read.table('../../Data/train_subject_list.csv', sep=',', header=F)
+    subjects <- sort(as.numeric(unique(subjectlist)$V1))
+    cvsubject <- subjects[cv]
+    train.idx <- which(subjectlist != cvsubject)
+    valid.idx <- which(subjectlist == cvsubject)
+        
+    # load meta predictions on the training set
+    predicted.meta <- read.table('../../Data/train_meta_predictions.csv', sep=',', header=T)
+    predicted.meta <- predicted.meta$Prediction
+    
+    # combine brain and meta predictions
+    predicted.meta.out <- predicted.meta[valid.idx]
+    predicted.meta.in  <- predicted.meta[train.idx]
+    predicted.prob.out <- (predicted.prob.out + predicted.meta.out) / 2
+    predicted.prob.in  <- (predicted.prob.in + predicted.meta.in) / 2
+    
     # add record to results table
     if (is.na(predicted.prob.out[1])) {
         cat('WARNING: Was not able to predict probabilities. Deal with it.')
@@ -123,6 +140,7 @@ result <- data.frame(read.table('../../Results/SampleSubmission.csv', sep = ',',
 result$Prediction = predicted
 write.table(result, paste('../../Results/subX_', datafolder, '_', mlmethod, '.csv', sep=''), sep=',', quote=F, row.names=F, col.names=T)
 """
+
 
 
 
