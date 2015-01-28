@@ -8,8 +8,9 @@
 #
 
 # load libraries
-.libPaths('/home/kuzovkin/R/x86_64-unknown-linux-gnu-library/3.0')
+.libPaths('/home/fishman/R/x86_64-unknown-linux-gnu-library/3.0')
 library('data.table')
+library('signal')
 
 # load data
 train.path <- '../../Data/eye/train'
@@ -168,7 +169,7 @@ colnames(test.orig) <- c(paste("A_", 1:(length(colnames(test.orig))), sep=""))
 
 # store the resulting dataset
 dataset = list('cvpairs'=cvpairs, 'test'=test.orig, 'train'=train.orig)
-folder = 'eye8ch1300ms80pca'
+folder = 'filterEye8ch1300ms80pca'
 system(paste('mkdir ../../Data/', folder, sep=''))
 saveRDS(dataset, paste('../../Data/', folder, '/dataset.rds', sep=''))
 
