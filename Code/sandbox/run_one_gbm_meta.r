@@ -4,7 +4,7 @@
 
 # 1) SPECIFIFY PACKAGES TO USE DURING LEARNING HERE
 # this is needed because we need to pass them to each parallel cluster separately
-packages=c('pROC', 'randomForest')
+packages=c('pROC', 'caret')
 
 library('foreach')
 library('doParallel')
@@ -19,23 +19,25 @@ for (pkg in packages) {
 .libPaths('/home/kuzovkin/R/x86_64-unknown-linux-gnu-library/3.0')
 
 # 2) SPECIFY THE DATA FOLDER (WITH THE dataset.rds FILE PRODUCED BY ONE OF Code/preprocessing/extract_*.r SCRIPTS)
-datafolder <- '8ch1300ms16cv80pca'
+datafolder <- 'eye8ch1300ms80pca'
 dataset <- readRDS(paste('../../Data/', datafolder, '/dataset.rds', sep=''))
 
 # 3) SPECIFY THE METHOD YOU USE (NEEDED JUST FOR RECORD)
-mlmethod <- 'rf'
+mlmethod <- 'gbm'
 
 # 4) ENLIST PARAMETERS HERE
 parameters <- list()
-parameters[['ntree']] <- c(500)
-parameters[['mtry']] <- c(10)
-parameters[['nodesize']] <- c(100)
+parameters[['n.trees']] <- c(500)
+parameters[['shrinkage']] <- c(0.05)
+parameters[['interaction.depth']] <- c(1)
 
 # 5) THIS FUNCITON SHOULD RETURN classifier OBJECT
 # @param p: current set of parameters
 # @param trainingset: set to train model on
 buildmodel <- function(p, trainingset) {
-    classifier <- randomForest(class ~ ., data=trainingset, ntree=p$ntree, mtry=p$mtry, nodesize=p$nodesize, do.trace=T)
+    gbmGrid <-  expand.grid(interaction.depth=p$interaction.depth, n.trees=p$n.trees, shrinkage=p$shrinkage)
+    trcontrol <- trainControl(method='none', classProbs=T)
+    classifier <- train(class ~., data=trainingset, 'gbm', trControl=trcontrol, tuneGrid = gbmGrid)
     return(classifier)
 }
 
@@ -43,7 +45,7 @@ buildmodel <- function(p, trainingset) {
 # @param classifier: classifier to use to predict
 # @param validset: set to validate results on
 makeprediction <- function(classifier, validset) {
-    predicted <- predict(classifier, newdata=validset, type='prob')[,2]
+    predicted <- predict(classifier, newdata=validset, type='prob')$positive
     return(predicted)
 }
 
@@ -61,7 +63,7 @@ registerDoParallel(cl)
 
 # initalize parameter search grid
 results <- buildgrid(parameters)
-    
+
 # read in current parameter set
 p <- results[1, ]
 
@@ -77,6 +79,23 @@ scores <- foreach(cv = 1:length(dataset$cvpairs), .combine='rbind', .packages=pa
     # make a prediciton on a validation and training sets
     predicted.prob.out <- makeprediction(classifier, cvpair$valid)
     predicted.prob.in <-  makeprediction(classifier, cvpair$train)
+    
+    # identify current subject rows in the training set
+    subjectlist <- read.table('../../Data/train_subject_list.csv', sep=',', header=F)
+    subjects <- sort(as.numeric(unique(subjectlist)$V1))
+    cvsubject <- subjects[cv]
+    train.idx <- which(subjectlist != cvsubject)
+    valid.idx <- which(subjectlist == cvsubject)
+        
+    # load meta predictions on the training set
+    predicted.meta <- read.table('../../Data/train_meta_predictions.csv', sep=',', header=T)
+    predicted.meta <- predicted.meta$Prediction
+    
+    # combine brain and meta predictions
+    predicted.meta.out <- predicted.meta[valid.idx]
+    predicted.meta.in  <- predicted.meta[train.idx]
+    predicted.prob.out <- (predicted.prob.out + predicted.meta.out) / 2
+    predicted.prob.in  <- (predicted.prob.in + predicted.meta.in) / 2
     
     # add record to results table
     if (is.na(predicted.prob.out[1])) {
@@ -100,6 +119,28 @@ print(Sys.time() - timestart)
 # show results
 print(scores)
 print(colMeans(scores))
+
+# build final classifier
+"""
+classifier <- buildmodel(p, dataset$train)
+"""
+
+# predict on training dataset and store the file
+"""
+predicted <- makeprediction(classifier, dataset$train)
+result <- data.frame(read.table('../../Data/TrainLabels.csv', sep = ',', header = T))
+result$Prediction = predicted
+write.table(result, paste('../../Data/train_', datafolder, '_', mlmethod, '.csv', sep=''), sep = ',', quote = F, row.names = F, col.names = T)
+"""
+
+# predict on test dataset and store the file
+"""
+predicted <- makeprediction(classifier, dataset$test)
+result <- data.frame(read.table('../../Results/SampleSubmission.csv', sep = ',', header = T))
+result$Prediction = predicted
+write.table(result, paste('../../Results/subX_', datafolder, '_', mlmethod, '.csv', sep=''), sep=',', quote=F, row.names=F, col.names=T)
+"""
+
 
 
 

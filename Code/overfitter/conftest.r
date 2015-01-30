@@ -4,7 +4,7 @@
 #
 
 # configuration to test
-#cf = './configuration/conf_bagFDA.r'
+cf = './configurations/run/conf_glm.r'
 
 
 
@@ -18,7 +18,7 @@ source('functions.r')
 options(width=200)
 
 # load dataset 
-datafolder <- 'fft_cz1300ms'
+datafolder <- 'meta'
 dataset <- readRDS(paste('../../Data/', datafolder, '/dataset.rds', sep=''))
 nf <- ncol(dataset$train)
 ns <- nrow(dataset$train)

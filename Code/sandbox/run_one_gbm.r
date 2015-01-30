@@ -19,7 +19,8 @@ for (pkg in packages) {
 .libPaths('/home/kuzovkin/R/x86_64-unknown-linux-gnu-library/3.0')
 
 # 2) SPECIFY THE DATA FOLDER (WITH THE dataset.rds FILE PRODUCED BY ONE OF Code/preprocessing/extract_*.r SCRIPTS)
-datafolder <- 'filterEye8ch1300ms80pca'
+datafolder <- 'genstats8ch1300ms'
+
 dataset <- readRDS(paste('../../Data/', datafolder, '/dataset.rds', sep=''))
 
 # 3) SPECIFY THE METHOD YOU USE (NEEDED JUST FOR RECORD)
@@ -102,6 +103,27 @@ print(Sys.time() - timestart)
 # show results
 print(scores)
 print(colMeans(scores))
+
+# build final classifier
+"""
+classifier <- buildmodel(p, dataset$train)
+"""
+
+# predict on training dataset and store the file
+"""
+predicted <- makeprediction(classifier, dataset$train)
+result <- data.frame(read.table('../../Data/TrainLabels.csv', sep = ',', header = T))
+result$Prediction = predicted
+write.table(result, paste('../../Data/train_', datafolder, '_', mlmethod, '.csv', sep=''), sep = ',', quote = F, row.names = F, col.names = T)
+"""
+
+# predict on test dataset and store the file
+"""
+predicted <- makeprediction(classifier, dataset$test)
+result <- data.frame(read.table('../../Results/SampleSubmission.csv', sep = ',', header = T))
+result$Prediction = predicted
+write.table(result, paste('../../Results/subX_', datafolder, '_', mlmethod, '.csv', sep=''), sep=',', quote=F, row.names=F, col.names=T)
+"""
 
 
 

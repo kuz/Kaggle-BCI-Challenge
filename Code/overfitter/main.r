@@ -14,7 +14,7 @@ source('functions.r')
 options(width=200)
 
 # load dataset 
-datafolder <- 'pca8ch1300ms16cv'
+datafolder <- 'meta'
 dataset <- readRDS(paste('../../Data/', datafolder, '/dataset.rds', sep=''))
 nf <- ncol(dataset$train)
 ns <- nrow(dataset$train)
@@ -42,7 +42,7 @@ for (cf in conf.files) {
     source('worker.r')
     
     # make predictions on test data using the best set of parameters
-    models[[mlmethod]] <- list('p'=p, 'classifier'=classifier, 'predicted'=predicted)
+    models[[mlmethod]] <- list('conf'=cf, 'p'=p, 'classifier'=classifier, 'predicted'=predicted)
     
     # output summary
     cat(format(Sys.time(), "%Y-%m-%d %H:%M:%S"), mlmethod, 'took', Sys.time() - timestart,'\n')
@@ -88,6 +88,29 @@ print(picked)
 models <- models[picked]
 predicted <- do.call('rbind.data.frame', lapply(models, function(x) { x$predicted }))
 predicted <- as.numeric(colMeans(predicted))
+
+# compute score of combined model on the training set
+for (modelname in names(models)) {
+    
+    # load model
+    model <- models[[modelname]]
+    
+    # load model configutation file
+    source(model$cf)
+    
+    # make predictions on traiing set
+    models[[modelname]]$trainpredict <- makeprediction(model$classifier, dataset$train)   
+}
+
+# combine predictions on training set
+trainpredict <- data.frame()
+for (modelname in names(models)) {
+    trainpredict <- rbind.data.frame(trainpredict, models[[modelname]]$trainpredict)
+}
+trainpredict <- colMeans(trainpredict)
+
+# show score of combined predictions on training set
+roc(dataset$train$class, trainpredict)$auc
 
 # store the predictions make by the ensemble
 result <- data.frame(read.table('results/SampleSubmission.csv', sep = ',', header = T))

@@ -26,9 +26,15 @@ dataset$train <- dataset$train[,c(261:265)]
 dataset$test <- dataset$test[,c(261:264)]
 
 # train a classifier
-gbmGrid <-  expand.grid(interaction.depth=1, n.trees=100, shrinkage=0.05)
+gbmGrid <-  expand.grid(interaction.depth=1, n.trees=500, shrinkage=0.05)
 trcontrol <- trainControl(method='none')
 classifier <- train(class ~., data = dataset$train, 'gbm', trControl=trcontrol, tuneGrid = gbmGrid)
+
+# predict on training set
+predicted   <- predict(classifier, newdata=dataset$train, type="prob")$positive
+result <- data.frame(read.table('../../Data/TrainLabels.csv', sep=',', header=T))
+result$Prediction = predicted
+write.table(result, paste('../../Data/train_meta_predictions.csv', sep=''), sep=',', quote=F, row.names=F, col.names=T)
 
 # predict on test dataset and store the file
 predicted   <- predict(classifier, newdata=dataset$test, type="prob")$positive
