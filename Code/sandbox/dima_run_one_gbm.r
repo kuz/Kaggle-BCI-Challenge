@@ -105,25 +105,21 @@ print(scores)
 print(colMeans(scores))
 
 # build final classifier
-"""
-classifier <- buildmodel(p, dataset$train)
-"""
+#classifier <- buildmodel(p, dataset$train)
 
 # predict on training dataset and store the file
-"""
-predicted <- makeprediction(classifier, dataset$train)
-result <- data.frame(read.table('../../Data/TrainLabels.csv', sep = ',', header = T))
-result$Prediction = predicted
-write.table(result, paste('../../Data/train_', datafolder, '_', mlmethod, '.csv', sep=''), sep = ',', quote = F, row.names = F, col.names = T)
-"""
+
+#predicted <- makeprediction(classifier, dataset$train)
+#result <- data.frame(read.table('../../Data/TrainLabels.csv', sep = ',', header = T))
+#result$Prediction = predicted
+#write.table(result, paste('../../Data/train_', datafolder, '_', mlmethod, '.csv', sep=''), sep = ',', quote = F, row.names = F, col.names = T)
 
 # predict on test dataset and store the file
-"""
-predicted <- makeprediction(classifier, dataset$test)
-result <- data.frame(read.table('../../Results/SampleSubmission.csv', sep = ',', header = T))
-result$Prediction = predicted
-write.table(result, paste('../../Results/subX_', datafolder, '_', mlmethod, '.csv', sep=''), sep=',', quote=F, row.names=F, col.names=T)
-"""
+
+#predicted <- makeprediction(classifier, dataset$test)
+#result <- data.frame(read.table('../../Results/SampleSubmission.csv', sep = ',', header = T))
+#result$Prediction = predicted
+#write.table(result, paste('../../Results/subX_', datafolder, '_', mlmethod, '.csv', sep=''), sep=',', quote=F, row.names=F, col.names=T)
 
 
 
