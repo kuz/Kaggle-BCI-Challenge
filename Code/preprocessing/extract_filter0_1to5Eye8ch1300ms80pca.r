@@ -169,7 +169,7 @@ colnames(test.orig) <- c(paste("A_", 1:(length(colnames(test.orig))), sep=""))
 
 # store the resulting dataset
 dataset = list('cvpairs'=cvpairs, 'test'=test.orig, 'train'=train.orig)
-folder = 'filter1to5Eye8ch1300ms80pca'
+folder = 'filter01to5Eye8ch1300ms80pca'
 system(paste('mkdir ../../Data/', folder, sep=''))
 saveRDS(dataset, paste('../../Data/', folder, '/dataset.rds', sep=''))
 

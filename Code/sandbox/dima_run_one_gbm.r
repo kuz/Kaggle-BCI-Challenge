@@ -19,7 +19,7 @@ for (pkg in packages) {
 .libPaths('/home/fishman/R/x86_64-unknown-linux-gnu-library/3.0')
 
 # 2) SPECIFY THE DATA FOLDER (WITH THE dataset.rds FILE PRODUCED BY ONE OF Code/preprocessing/extract_*.r SCRIPTS)
-datafolder <- 'filter50to100Eye8ch1300ms80pca'
+datafolder <- 'filter01to5Eye8ch1300ms80pca'
 
 dataset <- readRDS(paste('../../Data/', datafolder, '/dataset.rds', sep=''))
 
