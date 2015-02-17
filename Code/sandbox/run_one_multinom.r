@@ -19,7 +19,7 @@ for (pkg in packages) {
 .libPaths('/home/kuzovkin/R/x86_64-unknown-linux-gnu-library/3.0')
 
 # 2) SPECIFY THE DATA FOLDER (WITH THE dataset.rds FILE PRODUCED BY ONE OF Code/preprocessing/extract_*.r SCRIPTS)
-datafolder <- 'eye8ch1300ms80pca'
+datafolder <- '1to5butterEye8ch1300ms80pca_meta_5fusion'
 dataset <- readRDS(paste('../../Data/', datafolder, '/dataset.rds', sep=''))
 
 # 3) SPECIFY THE METHOD YOU USE (NEEDED JUST FOR RECORD)
@@ -27,8 +27,8 @@ mlmethod <- 'multinom'
 
 # 4) ENLIST PARAMETERS HERE
 parameters <- list()
-parameters[['maxit']] <- c(100)
-parameters[['decay']] <- c(20)
+parameters[['maxit']] <- c(20)
+parameters[['decay']] <- c(1)
 
 # 5) THIS FUNCITON SHOULD RETURN classifier OBJECT
 # @param p: current set of parameters
@@ -38,6 +38,7 @@ buildmodel <- function(p, trainingset) {
     trcontrol <- trainControl(method='none')
     classifier <- train(class ~., data=trainingset, 'multinom', trControl=trcontrol, tuneGrid=tunegrid,
                         maxit=p$maxit, MaxNWts=10000)
+    return(classifier)
 }
 
 # 6) THIS FUNCITON SHOULD RETURN VECTOR OF PREDICTED PROBABILITIES
@@ -79,31 +80,6 @@ scores <- foreach(cv = 1:length(dataset$cvpairs), .combine='rbind', .packages=pa
     predicted.prob.out <- makeprediction(classifier, cvpair$valid)
     predicted.prob.in <-  makeprediction(classifier, cvpair$train)
     
-    # identify current subject rows in the training set
-    subjectlist <- read.table('../../Data/train_subject_list.csv', sep=',', header=F)
-    subjects <- sort(as.numeric(unique(subjectlist)$V1))
-    cvsubject <- subjects[cv]
-    train.idx <- which(subjectlist != cvsubject)
-    valid.idx <- which(subjectlist == cvsubject)
-    
-    # load meta predictions on the training set
-    predicted.meta <- read.table('../../Data/train_meta_predictions.csv', sep=',', header=T)
-    predicted.meta <- predicted.meta$Prediction
-    
-    # combine brain and meta predictions
-    predicted.meta.out <- predicted.meta[valid.idx]
-    predicted.meta.in  <- predicted.meta[train.idx]
-    predicted.prob.out <- (predicted.prob.out + predicted.meta.out) / 2
-    predicted.prob.in  <- (predicted.prob.in + predicted.meta.in) / 2
-    
-    # add genstats predictions
-    predicted.stats <- read.table('../../Data/train_genstats8ch1300ms_gbm.csv', sep=',', header=T)
-    predicted.stats <- predicted.stats$Prediction
-    predicted.stats.out <- predicted.stats[valid.idx]
-    predicted.stats.in  <- predicted.stats[train.idx]
-    predicted.prob.out <- (predicted.prob.out + predicted.stats.out) / 2
-    predicted.prob.in  <- (predicted.prob.in + predicted.stats.in) / 2
-    
     # add record to results table
     if (is.na(predicted.prob.out[1])) {
         cat('WARNING: Was not able to predict probabilities. Deal with it.')
@@ -127,22 +103,19 @@ print(Sys.time() - timestart)
 print(scores)
 print(colMeans(scores))
 
-# train final classifier
+# build final classifier
 classifier <- buildmodel(p, dataset$train)
 
-# produce result
+# predict on training dataset and store the file
+#predicted <- makeprediction(classifier, dataset$train)
+#result <- data.frame(read.table('../../Data/TrainLabels.csv', sep = ',', header = T))
+#result$Prediction = predicted
+#write.table(result, paste('../../Data/train_', datafolder, '_', mlmethod, '.csv', sep=''), sep = ',', quote = F, row.names = F, col.names = T)
+
+# predict on test dataset and store the file
 predicted <- makeprediction(classifier, dataset$test)
 result <- data.frame(read.table('../../Results/SampleSubmission.csv', sep = ',', header = T))
 result$Prediction = predicted
-write.table(result, paste('../../Results/subX_', datafolder, '_meta_genstats_', mlmethod, '.csv', sep=''), sep=',', quote=F, row.names=F, col.names=T)
-
-
-
-
-
-
-
-
-
+write.table(result, paste('../../Results/subX_', datafolder, '_', mlmethod, '.csv', sep=''), sep=',', quote=F, row.names=F, col.names=T)
 
 

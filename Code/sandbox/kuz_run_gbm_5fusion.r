@@ -11,41 +11,44 @@ library('doParallel')
 library('parallel')
 source('../functions.r')
 for (pkg in packages) {
-  library(pkg, character.only=T)
+    library(pkg, character.only=T)
 }
 
 # On the server the global package directory is not writable
 # you might want to specify your local one here
-.libPaths('/home/leontjeva/R/x86_64-unknown-linux-gnu-library/3.0')
+.libPaths('/home/kuzovkin/R/x86_64-unknown-linux-gnu-library/3.0')
 
 # 2) SPECIFY THE DATA FOLDER (WITH THE dataset.rds FILE PRODUCED BY ONE OF Code/preprocessing/extract_*.r SCRIPTS)
-datafolder <- '1to5butterEye8ch1300ms80pca'
+datafolder <- 'eye8ch1300ms80pca_5fusion'
 dataset <- readRDS(paste('../../Data/', datafolder, '/dataset.rds', sep=''))
 
 # 3) SPECIFY THE METHOD YOU USE (NEEDED JUST FOR RECORD)
-mlmethod <- 'LogitBoost'
+mlmethod <- 'gbm'
 
 # 4) ENLIST PARAMETERS HERE
 parameters <- list()
-parameters[['nIter']] <- c(50)
+parameters[['n.trees']] <- c(500)
+parameters[['shrinkage']] <- c(0.05)
+parameters[['interaction.depth']] <- c(1)
 
 # 5) THIS FUNCITON SHOULD RETURN classifier OBJECT
 # @param p: current set of parameters
 # @param trainingset: set to train model on
 buildmodel <- function(p, trainingset) {
-  tunegrid <- data.frame(nIter=p$nIter)
-  trcontrol <- trainControl(method='none')
-  classifier <- train(class ~., data=trainingset, 'LogitBoost', trControl=trcontrol, tuneGrid=tunegrid)
-  return(classifier)
+    gbmGrid <-  expand.grid(interaction.depth=p$interaction.depth, n.trees=p$n.trees, shrinkage=p$shrinkage)
+    trcontrol <- trainControl(method='none', classProbs=T)
+    classifier <- train(class ~., data=trainingset, 'gbm', trControl=trcontrol, tuneGrid = gbmGrid)
+    return(classifier)
 }
 
 # 6) THIS FUNCITON SHOULD RETURN VECTOR OF PREDICTED PROBABILITIES
 # @param classifier: classifier to use to predict
 # @param validset: set to validate results on
 makeprediction <- function(classifier, validset) {
-  predicted <- predict(classifier, newdata=validset, type='prob')$positive
-  return(predicted)
+    predicted <- predict(classifier, newdata=validset, type='prob')$positive
+    return(predicted)
 }
+
 
 
 # ------- In happy circumstances you should not look below this line ------- #
@@ -64,9 +67,8 @@ results <- buildgrid(parameters)
 # read in current parameter set
 p <- results[1, ]
 
-
 # loop over cross-validation (training, validation) pairs
-scores <- foreach(cv = 1:length(dataset$cvpairs), .packages=packages) %dopar% {
+scores <- foreach(cv = 1:length(dataset$cvpairs), .combine='rbind', .packages=packages) %dopar% {
     
     # take cv pair
     cvpair <- dataset$cvpairs[[cv]]
@@ -88,8 +90,7 @@ scores <- foreach(cv = 1:length(dataset$cvpairs), .packages=packages) %dopar% {
         score.in  <- as.numeric(roc(cvpair$train$class, predicted.prob.in)$auc)
     }
     
-    #data.frame('in-score'=score.in, 'out-score'=score.out)
-    list('cv'=cv, 'in-score'=score.in, 'out-score'=score.out, 'predicted'=predicted.prob.out)
+    data.frame('in-score'=score.in, 'out-score'=score.out)
 }
 
 # stop parallel processing cluster
@@ -98,32 +99,27 @@ stopCluster(cl)
 # Tell how long the whole process took
 print(Sys.time() - timestart)
 
-# intialize results array
-result <- data.frame(read.table('../../Data/TrainLabels.csv', sep = ',', header = T))
-subjectlist <- data.frame(read.table('../../Data/train_subject_list.csv', sep = ',', header = F))
-subjects <- as.numeric(unique(subjectlist)$V1)
-
-# glue scores predicted in cv rounds together
-points <- data.frame()
-for (cv in 1:16) {
-    idx <- which(subjectlist == subjects[cv])
-    result$Prediction[idx] <- scores[[cv]]$predicted
-    points <- rbind.data.frame(points, c(scores[[cv]][['in-score']], scores[[cv]][['out-score']]))
-}
-
 # show results
-colnames(points) <- c('in-score', 'out-score')
-print(points)
-print(colMeans(points))
-
-# store predictions on the training dataset
-write.table(result, paste('../../Data/fusion/train_', datafolder, '_', mlmethod, '.csv', sep=''), sep = ',', quote = F, row.names = F, col.names = T)
+print(scores)
+print(colMeans(scores))
 
 # build final classifier
-classifier <- buildmodel(p, dataset$train)
+#classifier <- buildmodel(p, dataset$train)
+
+# predict on training dataset and store the file
+#predicted <- makeprediction(classifier, dataset$train)
+#result <- data.frame(read.table('../../Data/TrainLabels.csv', sep = ',', header = T))
+#result$Prediction = predicted
+#write.table(result, paste('../../Data/train_', datafolder, '_', mlmethod, '.csv', sep=''), sep = ',', quote = F, row.names = F, col.names = T)
 
 # predict on test dataset and store the file
-predicted <- makeprediction(classifier, dataset$test)
-result <- data.frame(read.table('../../Results/SampleSubmission.csv', sep = ',', header = T))
-result$Prediction = predicted
-write.table(result, paste('../../Data/fusion/test_', datafolder, '_', mlmethod, '.csv', sep=''), sep=',', quote=F, row.names=F, col.names=T)
+#predicted <- makeprediction(classifier, dataset$test)
+#result <- data.frame(read.table('../../Results/SampleSubmission.csv', sep = ',', header = T))
+#result$Prediction = predicted
+#write.table(result, paste('../../Results/subX_', datafolder, '_', mlmethod, '.csv', sep=''), sep=',', quote=F, row.names=F, col.names=T)
+
+
+
+
+
+

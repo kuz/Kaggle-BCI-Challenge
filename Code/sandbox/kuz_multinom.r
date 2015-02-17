@@ -11,7 +11,7 @@ library('doParallel')
 library('parallel')
 source('../functions.r')
 for (pkg in packages) {
-  library(pkg, character.only=T)
+    library(pkg, character.only=T)
 }
 
 # On the server the global package directory is not writable
@@ -27,26 +27,26 @@ mlmethod <- 'gbm'
 
 # 4) ENLIST PARAMETERS HERE
 parameters <- list()
-parameters[['n.trees']] <- c(5, 10, 20, 50, 100, 200)
-parameters[['shrinkage']] <- c(0.00000001, 0.001, 0.01, 0.05, 0.2)
-parameters[['interaction.depth']] <- c(1, 2, 3)
+parameters[['maxit']] <- c(5, 10, 20, 50, 100, 300, 500)
+parameters[['decay']] <- c(0.000001, 0.001, 0.1, 1, 10, 1000)
 
 # 5) THIS FUNCITON SHOULD RETURN classifier OBJECT
 # @param p: current set of parameters
 # @param trainingset: set to train model on
 buildmodel <- function(p, trainingset) {
-  gbmGrid <-  expand.grid(interaction.depth=p$interaction.depth, n.trees=p$n.trees, shrinkage=p$shrinkage)
-  trcontrol <- trainControl(method='none', classProbs=T)
-  classifier <- train(class ~., data=trainingset, 'gbm', trControl=trcontrol, tuneGrid = gbmGrid)
-  return(classifier)
+    tunegrid <- data.frame(decay=p$decay)
+    trcontrol <- trainControl(method='none')
+    classifier <- train(class ~., data=trainingset, 'multinom', trControl=trcontrol, tuneGrid=tunegrid,
+                        maxit=p$maxit, MaxNWts=10000)
+    return(classifier)
 }
 
 # 6) THIS FUNCITON SHOULD RETURN VECTOR OF PREDICTED PROBABILITIES
 # @param classifier: classifier to use to predict
 # @param validset: set to validate results on
 makeprediction <- function(classifier, validset) {
-  predicted <- predict(classifier, newdata=validset, type='prob')$positive
-  return(predicted)
+    predicted <- predict(classifier, newdata=validset, type='prob')$positive
+    return(predicted)
 }
 
 
@@ -68,50 +68,50 @@ options(width=200)
 # loop over all combinations of parameters
 timestart <- Sys.time()
 cvscores <- foreach(r = 1:nrow(results), .combine='rbind', .packages=packages) %dopar% {
-  
-  # read in current parameter set
-  p <- results[r, ]
-  
-  # sink progress output to log file
-  sink(logfile, append=T)
-  Sys.sleep(runif(1))
-  cat('Starting set of parameters', r, 'out of', nrow(results), '\n')
-  sink()
-  
-  # here we store scores for current parameter set
-  scores.out <- c()
-  scores.in <- c()
-  
-  # loop over cross-validation (training, validation) pairs
-  for (cvpair in dataset$cvpairs) {
     
-    # train a model
-    classifier <- buildmodel(p, cvpair$train)
+    # read in current parameter set
+    p <- results[r, ]
     
-    # make a prediciton on a validation and training sets
-    predicted.prob.out <- makeprediction(classifier, cvpair$valid)
-    predicted.prob.in <-  makeprediction(classifier, cvpair$train)
+    # sink progress output to log file
+    sink(logfile, append=T)
+    Sys.sleep(runif(1))
+    cat('Starting set of parameters', r, 'out of', nrow(results), '\n')
+    sink()
     
-    # add record to results table
-    if (is.na(predicted.prob.out[1])) {
-      cat('WARNING: Was not able to predict probabilities. Deal with it.')
-      scores.out <- append(scores.out, -1)
-      scores.in <- append(scores.in, -1)
-    } else {
-      scores.out <- append(scores.out, as.numeric(roc(cvpair$valid$class, predicted.prob.out)$auc))
-      scores.in  <- append(scores.in,  as.numeric(roc(cvpair$train$class, predicted.prob.in)$auc))
+    # here we store scores for current parameter set
+    scores.out <- c()
+    scores.in <- c()
+    
+    # loop over cross-validation (training, validation) pairs
+    for (cvpair in dataset$cvpairs) {
+        
+        # train a model
+        classifier <- buildmodel(p, cvpair$train)
+        
+        # make a prediciton on a validation and training sets
+        predicted.prob.out <- makeprediction(classifier, cvpair$valid)
+        predicted.prob.in <-  makeprediction(classifier, cvpair$train)
+        
+        # add record to results table
+        if (is.na(predicted.prob.out[1])) {
+            cat('WARNING: Was not able to predict probabilities. Deal with it.')
+            scores.out <- append(scores.out, -1)
+            scores.in <- append(scores.in, -1)
+        } else {
+            scores.out <- append(scores.out, as.numeric(roc(cvpair$valid$class, predicted.prob.out)$auc))
+            scores.in  <- append(scores.in,  as.numeric(roc(cvpair$train$class, predicted.prob.in)$auc))
+        }
     }
-  }
-  
-  # log that current set of parameters is complete
-  sink(logfile, append=T)
-  Sys.sleep(runif(1))
-  cat('Done on set of parameters', r, 'out of', nrow(results), '\n')
-  sink()
-  
-  # store the average score for this set of parameters
-  data.frame('inscore'=mean(scores.in), 'outscore'=mean(scores.out), 'sd'=sd(scores.out))
-  
+    
+    # log that current set of parameters is complete
+    sink(logfile, append=T)
+    Sys.sleep(runif(1))
+    cat('Done on set of parameters', r, 'out of', nrow(results), '\n')
+    sink()
+    
+    # store the average score for this set of parameters
+    data.frame('inscore'=mean(scores.in), 'outscore'=mean(scores.out), 'sd'=sd(scores.out))
+    
 }
 
 # Tell how long the whole process took

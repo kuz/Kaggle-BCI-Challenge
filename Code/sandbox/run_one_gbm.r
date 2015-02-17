@@ -19,7 +19,7 @@ for (pkg in packages) {
 .libPaths('/home/kuzovkin/R/x86_64-unknown-linux-gnu-library/3.0')
 
 # 2) SPECIFY THE DATA FOLDER (WITH THE dataset.rds FILE PRODUCED BY ONE OF Code/preprocessing/extract_*.r SCRIPTS)
-datafolder <- 'genstats8ch1300ms'
+datafolder <- '1to5butterEye8ch1300ms80pca_meta_5fusion'
 
 dataset <- readRDS(paste('../../Data/', datafolder, '/dataset.rds', sep=''))
 
@@ -28,7 +28,7 @@ mlmethod <- 'gbm'
 
 # 4) ENLIST PARAMETERS HERE
 parameters <- list()
-parameters[['n.trees']] <- c(500)
+parameters[['n.trees']] <- c(200)
 parameters[['shrinkage']] <- c(0.05)
 parameters[['interaction.depth']] <- c(1)
 
@@ -105,27 +105,18 @@ print(scores)
 print(colMeans(scores))
 
 # build final classifier
-"""
-classifier <- buildmodel(p, dataset$train)
-"""
+#classifier <- buildmodel(p, dataset$train)
 
 # predict on training dataset and store the file
-"""
-predicted <- makeprediction(classifier, dataset$train)
-result <- data.frame(read.table('../../Data/TrainLabels.csv', sep = ',', header = T))
-result$Prediction = predicted
-write.table(result, paste('../../Data/train_', datafolder, '_', mlmethod, '.csv', sep=''), sep = ',', quote = F, row.names = F, col.names = T)
-"""
+#predicted <- makeprediction(classifier, dataset$train)
+#result <- data.frame(read.table('../../Data/TrainLabels.csv', sep = ',', header = T))
+#result$Prediction = predicted
+#write.table(result, paste('../../Data/train_', datafolder, '_', mlmethod, '.csv', sep=''), sep = ',', quote = F, row.names = F, col.names = T)
 
 # predict on test dataset and store the file
-"""
-predicted <- makeprediction(classifier, dataset$test)
-result <- data.frame(read.table('../../Results/SampleSubmission.csv', sep = ',', header = T))
-result$Prediction = predicted
-write.table(result, paste('../../Results/subX_', datafolder, '_', mlmethod, '.csv', sep=''), sep=',', quote=F, row.names=F, col.names=T)
-"""
-
-
-
+#predicted <- makeprediction(classifier, dataset$test)
+#result <- data.frame(read.table('../../Results/SampleSubmission.csv', sep = ',', header = T))
+#result$Prediction = predicted
+#write.table(result, paste('../../Results/subX_', datafolder, '_', mlmethod, '.csv', sep=''), sep=',', quote=F, row.names=F, col.names=T)
 
 

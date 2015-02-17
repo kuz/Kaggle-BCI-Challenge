@@ -1,0 +1,84 @@
+Starting set of parameters 5 out of 42 
+Starting set of parameters 13 out of 42 
+Starting set of parameters 12 out of 42 
+Starting set of parameters 14 out of 42 
+Starting set of parameters 6 out of 42 
+Starting set of parameters 2 out of 42 
+Starting set of parameters 1 out of 42 
+Starting set of parameters 16 out of 42 
+Starting set of parameters 3 out of 42 
+Starting set of parameters 15 out of 42 
+Starting set of parameters 10 out of 42 
+Starting set of parameters 9 out of 42 
+Starting set of parameters 7 out of 42 
+Starting set of parameters 11 out of 42 
+Starting set of parameters 8 out of 42 
+Starting set of parameters 4 out of 42 
+Done on set of parameters 3 out of 42 
+Done on set of parameters 2 out of 42 
+Starting set of parameters 17 out of 42 
+Starting set of parameters 18 out of 42 
+Done on set of parameters 4 out of 42 
+Done on set of parameters 8 out of 42 
+Done on set of parameters 5 out of 42 
+Starting set of parameters 19 out of 42 
+Starting set of parameters 20 out of 42 
+Starting set of parameters 21 out of 42 
+Done on set of parameters 12 out of 42 
+Done on set of parameters 14 out of 42 
+Done on set of parameters 7 out of 42 
+Starting set of parameters 22 out of 42 
+Starting set of parameters 24 out of 42 
+Starting set of parameters 23 out of 42 
+Done on set of parameters 1 out of 42 
+Done on set of parameters 13 out of 42 
+Done on set of parameters 6 out of 42 
+Starting set of parameters 25 out of 42 
+Starting set of parameters 27 out of 42 
+Done on set of parameters 9 out of 42 
+Done on set of parameters 10 out of 42 
+Starting set of parameters 26 out of 42 
+Starting set of parameters 29 out of 42 
+Done on set of parameters 16 out of 42 
+Done on set of parameters 15 out of 42 
+Starting set of parameters 30 out of 42 
+Starting set of parameters 28 out of 42 
+Starting set of parameters 31 out of 42 
+Done on set of parameters 11 out of 42 
+Starting set of parameters 32 out of 42 
+Done on set of parameters 17 out of 42 
+Starting set of parameters 33 out of 42 
+Done on set of parameters 18 out of 42 
+Starting set of parameters 34 out of 42 
+Done on set of parameters 20 out of 42 
+Starting set of parameters 35 out of 42 
+Done on set of parameters 19 out of 42 
+Done on set of parameters 23 out of 42 
+Starting set of parameters 36 out of 42 
+Starting set of parameters 37 out of 42 
+Done on set of parameters 22 out of 42 
+Done on set of parameters 21 out of 42 
+Starting set of parameters 38 out of 42 
+Starting set of parameters 39 out of 42 
+Done on set of parameters 29 out of 42 
+Done on set of parameters 24 out of 42 
+Done on set of parameters 25 out of 42 
+Done on set of parameters 27 out of 42 
+Starting set of parameters 41 out of 42 
+Starting set of parameters 40 out of 42 
+Starting set of parameters 42 out of 42 
+Done on set of parameters 30 out of 42 
+Done on set of parameters 28 out of 42 
+Done on set of parameters 31 out of 42 
+Done on set of parameters 32 out of 42 
+Done on set of parameters 26 out of 42 
+Done on set of parameters 33 out of 42 
+Done on set of parameters 34 out of 42 
+Done on set of parameters 35 out of 42 
+Done on set of parameters 38 out of 42 
+Done on set of parameters 37 out of 42 
+Done on set of parameters 36 out of 42 
+Done on set of parameters 39 out of 42 
+Done on set of parameters 41 out of 42 
+Done on set of parameters 40 out of 42 
+Done on set of parameters 42 out of 42 

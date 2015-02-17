@@ -19,7 +19,7 @@ for (pkg in packages) {
 .libPaths('/home/leontjeva/R/x86_64-unknown-linux-gnu-library/3.0')
 
 # 2) SPECIFY THE DATA FOLDER (WITH THE dataset.rds FILE PRODUCED BY ONE OF Code/preprocessing/extract_*.r SCRIPTS)
-datafolder <- 'eye8ch1300ms80pca'
+datafolder <- '1to5butterEye8ch1300ms80pca'
 dataset <- readRDS(paste('../../Data/', datafolder, '/dataset.rds', sep=''))
 
 # 3) SPECIFY THE METHOD YOU USE (NEEDED JUST FOR RECORD)
@@ -67,30 +67,32 @@ results <- buildgrid(parameters)
 # read in current parameter set
 p <- results[1, ]
 
+
 # loop over cross-validation (training, validation) pairs
-scores <- foreach(cv = 1:length(dataset$cvpairs), .combine='rbind', .packages=packages) %dopar% {
-  
-  # take cv pair
-  cvpair <- dataset$cvpairs[[cv]]
-  
-  # train a model
-  classifier <- buildmodel(p, cvpair$train)
-  
-  # make a prediciton on a validation and training sets
-  predicted.prob.out <- makeprediction(classifier, cvpair$valid)
-  predicted.prob.in <-  makeprediction(classifier, cvpair$train)
-  
-  # add record to results table
-  if (is.na(predicted.prob.out[1])) {
-    cat('WARNING: Was not able to predict probabilities. Deal with it.')
-    score.out <- -1
-    score.in <- -1
-  } else {
-    score.out <- as.numeric(roc(cvpair$valid$class, predicted.prob.out)$auc)
-    score.in  <- as.numeric(roc(cvpair$train$class, predicted.prob.in)$auc)
-  }
-  
-  data.frame('in-score'=score.in, 'out-score'=score.out)
+scores <- foreach(cv = 1:length(dataset$cvpairs), .packages=packages) %dopar% {
+    
+    # take cv pair
+    cvpair <- dataset$cvpairs[[cv]]
+    
+    # train a model
+    classifier <- buildmodel(p, cvpair$train)
+    
+    # make a prediciton on a validation and training sets
+    predicted.prob.out <- makeprediction(classifier, cvpair$valid)
+    predicted.prob.in <-  makeprediction(classifier, cvpair$train)
+    
+    # add record to results table
+    if (is.na(predicted.prob.out[1])) {
+        cat('WARNING: Was not able to predict probabilities. Deal with it.')
+        score.out <- -1
+        score.in <- -1
+    } else {
+        score.out <- as.numeric(roc(cvpair$valid$class, predicted.prob.out)$auc)
+        score.in  <- as.numeric(roc(cvpair$train$class, predicted.prob.in)$auc)
+    }
+    
+    #data.frame('in-score'=score.in, 'out-score'=score.out)
+    list('cv'=cv, 'in-score'=score.in, 'out-score'=score.out, 'predicted'=predicted.prob.out)
 }
 
 # stop parallel processing cluster
@@ -99,25 +101,35 @@ stopCluster(cl)
 # Tell how long the whole process took
 print(Sys.time() - timestart)
 
+# intialize results array
+result <- data.frame(read.table('../../Data/TrainLabels.csv', sep = ',', header = T))
+subjectlist <- data.frame(read.table('../../Data/train_subject_list.csv', sep = ',', header = F))
+subjects <- as.numeric(unique(subjectlist)$V1)
+
+# glue scores predicted in cv rounds together
+points <- data.frame()
+for (cv in 1:16) {
+    idx <- which(subjectlist == subjects[cv])
+    result$Prediction[idx] <- scores[[cv]]$predicted
+    points <- rbind.data.frame(points, c(scores[[cv]][['in-score']], scores[[cv]][['out-score']]))
+}
+
 # show results
-print(scores)
-print(colMeans(scores))
+colnames(points) <- c('in-score', 'out-score')
+print(points)
+print(colMeans(points))
+
+# store predictions on the training dataset
+write.table(result, paste('../../Data/fusion/train_', datafolder, '_', mlmethod, '.csv', sep=''), sep = ',', quote = F, row.names = F, col.names = T)
 
 # build final classifier
 classifier <- buildmodel(p, dataset$train)
-
-# predict on training dataset and store the file
-predicted <- makeprediction(classifier, dataset$train)
-result <- data.frame(read.table('../../Data/TrainLabels.csv', sep = ',', header = T))
-result$Prediction = predicted
-write.table(result, paste('../../Data/train_', datafolder, '_', mlmethod, '.csv', sep=''), sep = ',', quote = F, row.names = F, col.names = T)
 
 # predict on test dataset and store the file
 predicted <- makeprediction(classifier, dataset$test)
 result <- data.frame(read.table('../../Results/SampleSubmission.csv', sep = ',', header = T))
 result$Prediction = predicted
-write.table(result, paste('../../Data/test_', datafolder, '_', mlmethod, '.csv', sep=''), sep=',', quote=F, row.names=F, col.names=T)
-
+write.table(result, paste('../../Data/fusion/test_', datafolder, '_', mlmethod, '.csv', sep=''), sep=',', quote=F, row.names=F, col.names=T)
 
 
 
