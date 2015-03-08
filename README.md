@@ -1,6 +1,11 @@
 Kaggle BCI Challenge
 ====================
-Here are listed the major steps we should take and the results of those steps as we took them.
+
+http://www.kaggle.com/c/inria-bci-challenge
+
+####Final result: 27th out of 260
+
+Here are listed the major steps we should take and the results of those steps as we took them.  
 
 1. Figure out good features
 ---------------------------
